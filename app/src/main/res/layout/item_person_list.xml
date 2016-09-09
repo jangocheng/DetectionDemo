@@ -28,30 +28,38 @@
 
     <LinearLayout
         android:id="@+id/item_control"
-        android:layout_marginTop="6dp"
-        android:orientation="vertical"
+        android:layout_marginTop="2dp"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <Button
             android:id="@+id/item_delete_person"
             android:text="@string/delete_person"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            style="@style/MyButton.b2" />
         <Button
-            android:id="@+id/item_updata_person"
-            android:text="@string/updata_person"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-        <Button
-            android:id="@+id/item_add_face"
-            android:text="@string/add_face"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-        <Button
-            android:id="@+id/item_delete_face"
-            android:text="@string/delete_face"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:id="@+id/item_manege_face"
+            android:text="@string/manage_face"
+            style="@style/MyButton.b2" />
+        <!--<Button-->
+            <!--android:id="@+id/item_updata_person"-->
+            <!--android:text="@string/updata_person"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content" />-->
+        <!--<Button-->
+            <!--android:id="@+id/item_add_face"-->
+            <!--android:text="@string/add_face"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content" />-->
+        <!--<Button-->
+            <!--android:id="@+id/item_fetch_face"-->
+            <!--android:text="@string/fetch_face"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content" />-->
+        <!--<Button-->
+            <!--android:id="@+id/item_delete_face"-->
+            <!--android:text="@string/delete_face"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content" />-->
     </LinearLayout>
 
 </LinearLayout>

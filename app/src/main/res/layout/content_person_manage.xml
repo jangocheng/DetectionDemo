@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.compilesense.liuyi.detectiondemo.PersonManageActivity"
+    tools:context=".activity.PersonManageActivity"
     tools:showIn="@layout/activity_person_manage">
 
     <LinearLayout
@@ -44,10 +44,11 @@
         </LinearLayout>
         <Button
             android:id="@+id/add_person"
-            android:layout_gravity="right"
             android:text="@string/add_person"
+            style="@style/MyButton"
+            android:layout_marginBottom="6dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_gravity="right"/>
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/rv_persons"

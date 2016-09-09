@@ -28,63 +28,11 @@ public class FetchData {
     }
 
     public void fetch(final Context context, String url, final Map<String,String> extraParams , final ResponseListener listener){
-        RequestQueue queue = Volley.newRequestQueue(context);
-
-        MultipartRequest request = new MultipartRequest(
-                Request.Method.POST,
-                url,
-                new Response.Listener<NetworkResponse>() {
-                    @Override
-                    public void onResponse(NetworkResponse response) {
-                        String parsed;
-                        try {
-                            parsed = new String(response.data, HttpHeaderParser.parseCharset(response.headers));
-                            listener.success(parsed);
-
-                        } catch (UnsupportedEncodingException e) {
-                            parsed = new String(response.data);
-                        }
-                        Log.d(TAG,"onResponse:"+parsed);
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        listener.failed();
-                        Log.e(TAG,error.toString());
-                    }
-                }){
-
-            @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<>();
-                params.put("api_id", context.getString(R.string.api_id));
-                params.put("api_secret", context.getString(R.string.api_secret));
-
-                if (extraParams != null && !extraParams.isEmpty()){
-                    params.putAll(extraParams);
-                }
-                return params;
-            }
-
-//            @Override
-//            protected Map<String, DataPart> getByteData() {
-//                Map<String, DataPart> params = new HashMap<>();
-//                try {
-//                    byte[] b = Util.uri2ByteArray(bitmap,context);
-//                    params.put("image", new DataPart("jiang.jpg", b, "image/jpeg"));
-//                }catch (Exception e){
-//                    Log.e(TAG,e.toString());
-//                }
-//
-//                return params;
-//            }
-        };
-        queue.add(request);
+        PostRequest.getInstance().post(context, url, extraParams, listener);
     }
 
     public void fetch(final Context context, String url, final ResponseListener listener){
-        fetch(context,url,null,listener);
+        PostRequest.getInstance().post(context, url, listener);
     }
 
 }

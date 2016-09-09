@@ -13,11 +13,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Map;
 
 /**
  * 上传图片要使用 POST MULTIPART REQUEST.
- * 在API22以上的SDK中 HttpEntity 已经被移除,所以需要自己定义一个 MultipartRequest.
+ * 在API22以上的SDK中 MultipartEntity 已经被移除,所以需要自己定义一个 MultipartRequest.
  *
  * Created by liuyi(695183065@qq.com) on 16/8/16.
  */
@@ -66,7 +67,7 @@ public class MultipartRequest extends Request<NetworkResponse> {
 
     @Override
     public String getBodyContentType(){
-        return "multipart/form-data;boundary=" + boundary;
+        return "multipart/form-data;charset=utf-8;boundary=" + boundary;
     }
 
     @Override
@@ -132,6 +133,7 @@ public class MultipartRequest extends Request<NetworkResponse> {
     private void textParse(DataOutputStream dataOutputStream,Map<String, String> params, String encoding) throws IOException{
         try {
             for (Map.Entry<String, String> entry : params.entrySet()){
+
                 buildTextPart(dataOutputStream,entry.getKey(),entry.getValue());
             }
         }catch (UnsupportedEncodingException e){
@@ -162,7 +164,9 @@ public class MultipartRequest extends Request<NetworkResponse> {
         dataOutputStream.writeBytes(twoHyphens + boundary + lineEnd);
         dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"" + parameterName + "\"" + lineEnd);
         dataOutputStream.writeBytes(lineEnd);
-        dataOutputStream.writeBytes(parameterValue + lineEnd);
+//        dataOutputStream.writeBytes(parameterValue + lineEnd);
+        dataOutputStream.write(parameterValue.getBytes() );
+        dataOutputStream.writeBytes(lineEnd);
     }
 
     /**
@@ -231,5 +235,10 @@ public class MultipartRequest extends Request<NetworkResponse> {
             content = data;
             type = mimeType;
         }
+    }
+
+    // 对包含中文的字符串进行转码，此为UTF-8。服务器那边要进行一次解码
+    private String encode(String value) throws UnsupportedEncodingException{
+        return URLEncoder.encode(value, "utf-8");
     }
 }

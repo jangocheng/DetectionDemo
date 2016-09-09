@@ -1,4 +1,4 @@
-package com.compilesense.liuyi.detectiondemo;
+package com.compilesense.liuyi.detectiondemo.activity;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -15,19 +15,21 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.compilesense.liuyi.detectiondemo.R;
+import com.compilesense.liuyi.detectiondemo.Utils.Util;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.ResponseListener;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.DetectAge;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.DetectGender;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.DetectImgProperties;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.DetectKeyPoint;
-import com.google.gson.Gson;
+import com.facebook.drawee.backends.pipeline.Fresco;
 
 import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     // 拍照成功，读取相册成功，裁减成功
-    private final int  ALBUM_OK = 1, CAMERA_OK = 2,CUT_OK = 3;
+    private final int  REQUEST_IMAGE_ALBUM = 1, REQUEST_IMAGE_CAPTURE = 2,CUT_OK = 3;
     private final int ACTION_DETECT_AGE = 11,ACTION_DETECT_GENDER = 12, ACTION_DETECT_IMAGE_POR = 13,
         ACTION_KEY_POINT = 14;
     private int action;
@@ -44,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        initFresco();
 //        Bitmap bmp = Util.getBitmapFromAssets(this);
 //        if (bmp == null){
 //            return;
@@ -58,6 +61,10 @@ public class MainActivity extends AppCompatActivity {
         // 定义拍照后存放图片的文件位置和名称，使用完毕后可以方便删除
         tempFile = new File(getCacheDir(), tempFileName);
         initView();
+    }
+
+    private void initFresco(){
+        Fresco.initialize(this);
     }
 
     private void initView(){
@@ -104,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
         recognition.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this,FaceRecognitionActivity.class));
+                startActivity(new Intent(MainActivity.this,RecognitionActivity.class));
             }
         });
     }
@@ -112,8 +119,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode != RESULT_OK){
+            return;
+        }
+
         switch (requestCode){
-            case ALBUM_OK:
+            case REQUEST_IMAGE_ALBUM:
                 //从相册中获取到图片了，才执行裁剪动作
                 if (data != null) {
                     Uri imageUri = data.getData();
@@ -125,7 +137,16 @@ public class MainActivity extends AppCompatActivity {
                     //setPicToView(data);
                 }
                 break;
-            case CAMERA_OK:
+            case REQUEST_IMAGE_CAPTURE:
+
+                Bitmap bitmap;
+                try {
+                    bitmap = data.getExtras().getParcelable("data");
+                    image.setImageBitmap(bitmap);
+                    detect(bitmap);
+                } catch (ClassCastException e){
+                    e.printStackTrace();
+                }
 
                 break;
 
@@ -141,18 +162,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void buildDialog(){
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        String[] a = {"相册"};
-        builder.setTitle(getString(R.string.dialog_title))
-                .setItems(a, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (which == 0){
-                            getPicFromAlbum();
-                        }
-                    }
-                })
-                .create().show();
+        Util.buildImgGetDialog(MainActivity.this, new Util.DialogOnClickListener() {
+            @Override
+            public void onClick(int which) {
+                if (which == 0){
+                    getPicFromAlbum();
+                }else if (which == 1){
+                    getPicFromCamera();
+                }
+            }
+        });
     }
 
     /**
@@ -199,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
          * ２，相册取到的照片，这里注意了，因为相册照片本身有一个位置，我们进行了裁剪后，要给一个裁剪后的位置，
          * 　　不然onActivityResult方法中，data一直是null
          */
-        if(type==CAMERA_OK)
+        if(type == REQUEST_IMAGE_CAPTURE)
         {
             uriTempFile = Uri.parse("file://" + "/" +  this.getCacheDir().getPath() + "/" + "small.jpg");
             intent.putExtra(MediaStore.EXTRA_OUTPUT, uriTempFile);
@@ -237,7 +256,73 @@ public class MainActivity extends AppCompatActivity {
         // 来自相册
         Intent albumIntent = new Intent(Intent.ACTION_PICK, null);
         albumIntent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
-        startActivityForResult(albumIntent, ALBUM_OK);
+        startActivityForResult(albumIntent, REQUEST_IMAGE_ALBUM);
+    }
+
+    private void getPicFromCamera(){
+        Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(intent, REQUEST_IMAGE_CAPTURE);
+    }
+
+    void detect(Bitmap bitmap){
+        switch (action){
+            case ACTION_DETECT_AGE:
+                DetectAge.getInstance().detect(MainActivity.this, bitmap, new ResponseListener() {
+                    @Override
+                    public void success(String response) {
+                        info.setText(response);
+                    }
+
+                    @Override
+                    public void failed(){
+                        info.setText("上传超时");
+                    }
+                });
+                break;
+
+            case ACTION_DETECT_GENDER:
+                DetectGender.getInstance().detect(MainActivity.this, bitmap, new ResponseListener() {
+                    @Override
+                    public void success(String response) {
+                        info.setText(response);
+                    }
+
+                    @Override
+                    public void failed() {
+                        info.setText("上传超时");
+                    }
+                });
+                break;
+
+            case ACTION_DETECT_IMAGE_POR:
+                DetectImgProperties.getInstance().detect(MainActivity.this, bitmap, new ResponseListener() {
+                    @Override
+                    public void success(String response) {
+                        info.setText(response);
+                    }
+
+                    @Override
+                    public void failed() {
+                        info.setText("上传超时");
+                    }
+                });
+                break;
+
+            case ACTION_KEY_POINT:
+                DetectKeyPoint.getInstance().detect(MainActivity.this, bitmap, new ResponseListener() {
+                    @Override
+                    public void success(String response) {
+                        info.setText(response);
+                    }
+
+                    @Override
+                    public void failed() {
+                        info.setText("上传超时");
+                    }
+                });
+                break;
+        }
+
     }
 
     void detect(Uri imageUri){

@@ -7,7 +7,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.compilesense.liuyi.detectiondemo.MainActivity">
+    tools:context=".activity.MainActivity">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -28,35 +28,23 @@
             <Button
                 android:id="@+id/age_detection"
                 android:text="@string/age_detection"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"/>
+                style="@style/MyButton"/>
             <Button
                 android:id="@+id/gender_detection"
                 android:text="@string/gender_detection"
-                android:gravity="center"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                style="@style/MyButton"/>
             <Button
                 android:id="@+id/image_por_detection"
                 android:text="@string/image_prop_detection"
-                android:gravity="center"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                style="@style/MyButton" />
             <Button
                 android:id="@+id/key_point_detection"
                 android:text="@string/key_point_detection"
-                android:gravity="center"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                style="@style/MyButton" />
             <Button
                 android:id="@+id/face_recognition"
                 android:text="@string/face_recognition"
-                android:gravity="center"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                style="@style/MyButton"/>
         </LinearLayout>
-
     </ScrollView>
-
 </RelativeLayout>

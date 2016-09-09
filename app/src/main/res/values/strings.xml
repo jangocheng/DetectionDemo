@@ -22,8 +22,13 @@
     <string name="updata_person">更新人员</string>
     <string name="name">姓名</string>
     <string name="tag">标签</string>
+    <string name="manage_face">管理人脸</string>
     <string name="add_face">添加人脸</string>
+    <string name="face_id">人脸ID</string>
+    <string name="fetch_face">查看人脸</string>
     <string name="delete_face">删除人脸</string>
+    <string name="recognition_face_person">与人员对比</string>
+    <string name="recognition_face_group">与人群对比</string>
     <string name="group_manage">人群管理</string>
     <string name="training_person">训练人员</string>
     <string name="training_group">训练人群</string>
@@ -32,6 +37,9 @@
     <string name="one_recognition">识别一人</string>
 
     <!--对话框-->
-    <string name="dialog_title">选择照片</string>
+    <string name="dialog_img_get_title">选择照片</string>
+    <string name="dialog_person_chose">选择人员</string>
+    <string name="no_any_person">没有人员</string>
     <string name="title_activity_person_manage">PersonManageActivity</string>
+    <string name="title_activity_face_manage">FaceManageActivity</string>
 </resources>

@@ -7,7 +7,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".FaceRecognitionActivity">
+    tools:context=".activity.RecognitionActivity">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -19,33 +19,27 @@
             <Button
                 android:id="@+id/person_manage"
                 android:text="@string/person_manage"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                style="@style/MyButton" />
             <Button
                 android:id="@+id/group_manage"
                 android:text="@string/group_manage"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                style="@style/MyButton" />
             <Button
                 android:id="@+id/training_person"
                 android:text="@string/training_person"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                style="@style/MyButton" />
             <Button
                 android:id="@+id/training_group"
                 android:text="@string/training_group"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                style="@style/MyButton" />
             <Button
                 android:id="@+id/train_state"
                 android:text="@string/training_state"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                style="@style/MyButton" />
             <Button
-                android:id="@+id/recognition"
+                android:id="@+id/recognition_two_face"
                 android:text="@string/tow_person_recognition"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                style="@style/MyButton"  />
         </LinearLayout>
     </ScrollView>
 </RelativeLayout>

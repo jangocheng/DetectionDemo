@@ -1,7 +1,6 @@
-package com.compilesense.liuyi.detectiondemo;
+package com.compilesense.liuyi.detectiondemo.activity;
 
 import android.content.Intent;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -16,7 +15,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.compilesense.liuyi.detectiondemo.R;
+import com.compilesense.liuyi.detectiondemo.Utils.SpaceItemDecoration;
 import com.compilesense.liuyi.detectiondemo.Utils.Util;
 import com.compilesense.liuyi.detectiondemo.model.Person;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.ResponseListener;
@@ -84,6 +86,12 @@ public class PersonManageActivity extends AppCompatActivity {
         addPerson.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (name.getText().toString() == null || name.getText().toString().equals("")){
+                    Toast.makeText(PersonManageActivity.this,"name不能为空",Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+
                 addPerson();
                 progressBar.setVisibility(View.VISIBLE);
             }
@@ -95,23 +103,6 @@ public class PersonManageActivity extends AppCompatActivity {
     private void initRecycleView(){
         adapter = new PersonListAdapter();
         adapter.setItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onAddFace(int position) {
-                addFacePostion = position;
-
-                Util.buildDialog(PersonManageActivity.this, new Util.DialogOnClickListener() {
-                    @Override
-                    public void onClick(int which) {
-                        getPicFromAlbum();
-                    }
-                });
-            }
-
-            @Override
-            public void onDeleteFace(int position) {
-                progressBar.setVisibility(View.VISIBLE);
-            }
-
             @Override
             public void onDeletePerson(int position) {
                 progressBar.setVisibility(View.VISIBLE);
@@ -131,10 +122,71 @@ public class PersonManageActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onUpdataPerson(int Position) {
-                progressBar.setVisibility(View.VISIBLE);
+            public void onManageFace(int position) {
+                FaceManageActivity.startFaceManageActivity(PersonManageActivity.this,
+                        adapter.personList.get(position).person_id);
             }
         });
+//        adapter.setItemClickListener(new OnItemClickListener() {
+//            @Override
+//            public void onAddFace(int position) {
+//                addFacePostion = position;
+//
+//                Util.buildImgGetDialog(PersonManageActivity.this, new Util.DialogOnClickListener() {
+//                    @Override
+//                    public void onClick(int which) {
+//                        getPicFromAlbum();
+//                    }
+//                });
+//            }
+//
+//            @Override
+//            public void onFetchFace(int position) {
+//                FaceManageActivity.startFaceManageActivity(PersonManageActivity.this,
+//                        adapter.personList.get(position).person_id);
+////                PersonManager.getInstance().fetchFace(PersonManageActivity.this,
+////                        adapter.personList.get(position).person_id,
+////                        new ResponseListener() {
+////                            @Override
+////                            public void success(String response) {
+////                                Log.d(TAG,"11111111111"+response);
+////                            }
+////
+////                            @Override
+////                            public void failed() {
+////
+////                            }
+////                        });
+//            }
+//
+//            @Override
+//            public void onDeleteFace(int position) {
+//                progressBar.setVisibility(View.VISIBLE);
+//            }
+//
+//            @Override
+//            public void onDeletePerson(int position) {
+//                progressBar.setVisibility(View.VISIBLE);
+//                PersonManager.getInstance().deletePerson(PersonManageActivity.this,
+//                        adapter.personList.get(position).person_id,
+//                        new ResponseListener() {
+//                            @Override
+//                            public void success(String response) {
+//                                fetchPerson();
+//                            }
+//
+//                            @Override
+//                            public void failed() {
+//
+//                            }
+//                        });
+//            }
+//
+//            @Override
+//            public void onUpdataPerson(int Position) {
+//                progressBar.setVisibility(View.VISIBLE);
+//            }
+//        });
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv_persons);
         recyclerView.setLayoutManager(new LinearLayoutManager(PersonManageActivity.this,LinearLayoutManager.VERTICAL,false));
         recyclerView.addItemDecoration(new SpaceItemDecoration(16));
@@ -176,8 +228,7 @@ public class PersonManageActivity extends AppCompatActivity {
                 try {
                     response = Util.string2jsonString(response);
                     ResponseFetchPerson responseFetchPerson = gson.fromJson(response,ResponseFetchPerson.class);
-
-                    if (responseFetchPerson.person.isEmpty()){
+                    if (responseFetchPerson.person == null){
                         return;
                     }
                     adapter.setPersons(responseFetchPerson.person);
@@ -193,16 +244,18 @@ public class PersonManageActivity extends AppCompatActivity {
         });
     }
 
-    class ResponseFetchPerson{
+     public class ResponseFetchPerson{
         public String status;
         public List<Person> person;
     }
 
     interface OnItemClickListener{
-        void onAddFace(int position);
-        void onDeleteFace(int position);
+//        void onAddFace(int position);
+//        void onFetchFace(int position);
+//        void onDeleteFace(int position);
         void onDeletePerson(int position);
-        void onUpdataPerson(int Position);
+        void onManageFace(int position);
+//        void onUpdataPerson(int Position);
     }
 
     class PersonListAdapter extends RecyclerView.Adapter<PersonListViewHolder>{
@@ -235,33 +288,49 @@ public class PersonManageActivity extends AppCompatActivity {
         public void onBindViewHolder(final PersonListViewHolder holder, int position) {
             if (itemClickListener != null){
 
-                holder.addFace.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        itemClickListener.onAddFace(holder.getAdapterPosition());
-                    }
-                });
+//                holder.addFace.setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        itemClickListener.onAddFace(holder.getAdapterPosition());
+//                    }
+//                });
 
-                holder.deleteFace.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        itemClickListener.onDeletePerson(holder.getAdapterPosition());
-                    }
-                });
+//                holder.deleteFace.setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        itemClickListener.onDeletePerson(holder.getAdapterPosition());
+//                    }
+//                });
+
+                final int p = holder.getAdapterPosition();
 
                 holder.deletePerson.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        itemClickListener.onDeletePerson(holder.getAdapterPosition());
+                        itemClickListener.onDeletePerson(p);
                     }
                 });
 
-                holder.updataPerson.setOnClickListener(new View.OnClickListener() {
+                holder.manageFace.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        itemClickListener.onUpdataPerson(holder.getAdapterPosition());
+                        itemClickListener.onManageFace(p);
                     }
                 });
+
+//                holder.updataPerson.setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        itemClickListener.onUpdataPerson(holder.getAdapterPosition());
+//                    }
+//                });
+//
+//                holder.fetchFace.setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        itemClickListener.onFetchFace(holder.getAdapterPosition());
+//                    }
+//                });
             }
             String name = personList.get(position).person_name;
             holder.name.setText(name);
@@ -279,17 +348,21 @@ public class PersonManageActivity extends AppCompatActivity {
         TextView name;
         View control;
 
-        Button deletePerson,updataPerson,addFace,deleteFace;
+//        Button deletePerson,updataPerson,addFace,deleteFace,fetchFace;
+
+        Button deletePerson,manageFace;
 
         public PersonListViewHolder(View itemView) {
             super(itemView);
             view = itemView;
             name = (TextView) itemView.findViewById(R.id.item_name);
             control =itemView.findViewById(R.id.item_control);
+            manageFace = (Button) control.findViewById(R.id.item_manege_face);
             deletePerson = (Button) control.findViewById(R.id.item_delete_person);
-            updataPerson = (Button) control.findViewById(R.id.item_updata_person);
-            addFace = (Button) control.findViewById(R.id.item_add_face);
-            deleteFace = (Button) control.findViewById(R.id.item_delete_face);
+//            updataPerson = (Button) control.findViewById(R.id.item_updata_person);
+//            addFace = (Button) control.findViewById(R.id.item_add_face);
+//            deleteFace = (Button) control.findViewById(R.id.item_delete_face);
+//            fetchFace = (Button) control.findViewById(R.id.item_fetch_face);
 
             control.setVisibility(View.GONE);
 
@@ -307,18 +380,4 @@ public class PersonManageActivity extends AppCompatActivity {
         }
     }
 
-    public class SpaceItemDecoration extends RecyclerView.ItemDecoration{
-
-        private int space;
-
-        public SpaceItemDecoration(int space) {
-            this.space = space;
-        }
-
-        @Override
-        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-            if(parent.getChildAdapterPosition(view) != 0)
-                outRect.top = space;
-        }
-    }
 }

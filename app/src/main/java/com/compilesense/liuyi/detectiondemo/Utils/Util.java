@@ -2,22 +2,22 @@ package com.compilesense.liuyi.detectiondemo.Utils;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 
 import com.compilesense.liuyi.detectiondemo.R;
+import com.compilesense.liuyi.detectiondemo.model.Person;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by shenjingyuan002 on 16/9/5.
@@ -26,10 +26,33 @@ public class Util {
     public interface DialogOnClickListener{
         void onClick(int which);
     }
-    public static void buildDialog(Context context, final DialogOnClickListener listener){
+    public static void buildImgGetDialog(Context context, final DialogOnClickListener listener){
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        String[] a = {"相册"};
-        builder.setTitle(context.getString(R.string.dialog_title))
+        String[] a = {"相册","拍照"};
+        builder.setTitle(context.getString(R.string.dialog_img_get_title))
+                .setItems(a, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        listener.onClick(which);
+                    }
+                })
+                .create().show();
+    }
+
+    public static void buildChosePersonDialog(Context context, List<Person> personList, final DialogOnClickListener listener){
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        if (personList == null || personList.isEmpty()){
+            builder.setTitle(context.getString(R.string.dialog_person_chose))
+                    .create().show();
+            return;
+        }
+        String[] a = new String[personList.size()];
+
+        for (int i = 0 ; i < personList.size() ; i++){
+            a[i] = personList.get(i).person_name;
+        }
+
+        builder.setTitle(context.getString(R.string.dialog_person_chose))
                 .setItems(a, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -46,6 +69,18 @@ public class Util {
         s = s.replace("\\","");
         int length = s.length();
         s = s.substring(1,length -1);
+
+        int a = s.indexOf("[");
+        int b = s.indexOf("]");
+
+        String r;
+        if (s.charAt(a - 1) == '\"'){
+            String aa = s.substring(0, a - 1 );
+            String bb = s.substring(a, b + 1);
+            String cc = s.substring(b + 2);
+            r = aa + bb + cc;
+            return r;
+        }
         return s;
     }
 

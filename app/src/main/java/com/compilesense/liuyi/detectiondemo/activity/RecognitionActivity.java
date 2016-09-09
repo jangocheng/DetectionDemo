@@ -1,4 +1,4 @@
-package com.compilesense.liuyi.detectiondemo;
+package com.compilesense.liuyi.detectiondemo.activity;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -7,10 +7,11 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.compilesense.liuyi.detectiondemo.R;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.ResponseListener;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.Train;
 
-public class FaceRecognitionActivity extends AppCompatActivity {
+public class RecognitionActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,7 +25,7 @@ public class FaceRecognitionActivity extends AppCompatActivity {
         findViewById(R.id.person_manage).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(FaceRecognitionActivity.this,PersonManageActivity.class));
+                startActivity(new Intent(RecognitionActivity.this,PersonManageActivity.class));
             }
         });
 
@@ -33,8 +34,7 @@ public class FaceRecognitionActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Log.d("onclick","tp");
-                Train.getInstance().trainPerson(FaceRecognitionActivity.this, new ResponseListener() {
+                Train.getInstance().trainPerson(RecognitionActivity.this, new ResponseListener() {
                     @Override
                     public void success(String response) {
                         Log.d("trainPerson",response);
@@ -53,8 +53,7 @@ public class FaceRecognitionActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Log.d("onclick","ts");
-                Train.getInstance().trainState(FaceRecognitionActivity.this, Train.task_id, new ResponseListener() {
+                Train.getInstance().trainState(RecognitionActivity.this, Train.task_id, new ResponseListener() {
                     @Override
                     public void success(String response) {
                         Log.d("trainState",response);
@@ -65,6 +64,14 @@ public class FaceRecognitionActivity extends AppCompatActivity {
 
                     }
                 });
+            }
+        });
+
+        Button recognitionTwoFace = (Button) findViewById(R.id.recognition_two_face);
+        recognitionTwoFace.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
             }
         });
 
