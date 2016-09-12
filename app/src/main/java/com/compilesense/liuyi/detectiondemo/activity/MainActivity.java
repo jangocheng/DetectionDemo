@@ -3,6 +3,8 @@ package com.compilesense.liuyi.detectiondemo.activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
+import android.media.FaceDetector;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +15,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.compilesense.liuyi.detectiondemo.view.FaceRectangleView;
 import com.compilesense.liuyi.detectiondemo.R;
 import com.compilesense.liuyi.detectiondemo.utils.Util;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.ResponseListener;
@@ -21,8 +24,10 @@ import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.DetectGend
 import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.DetectImgProperties;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.DetectKeyPoint;
 import com.facebook.drawee.backends.pipeline.Fresco;
+import com.google.gson.Gson;
 
 import java.io.File;
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -37,7 +42,9 @@ public class MainActivity extends AppCompatActivity {
     private Uri uriTempFile;
 
     private TextView info;
-    private ImageView image;
+    private FaceRectangleView image;
+
+    private Rect imageSourceRect;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void initView(){
         info = (TextView) findViewById(R.id.info);
-        image = (ImageView) findViewById(R.id.image_view);
+        image = (FaceRectangleView) findViewById(R.id.image_view);
 
         Button ageDetect = (Button) findViewById(R.id.age_detection);
         ageDetect.setOnClickListener(new View.OnClickListener() {
@@ -127,6 +134,17 @@ public class MainActivity extends AppCompatActivity {
                 //从相册中获取到图片了，才执行裁剪动作
                 if (data != null) {
                     Uri imageUri = data.getData();
+//                    Bitmap bitmap = BitmapFactory.decodeFile(imageUri.getPath());
+                    Bitmap bitmap = null;
+                    try {
+                        bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+                        imageSourceRect = new Rect(0, 0, bitmap.getWidth(),  bitmap.getHeight());
+                        bitmap.recycle();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+
                     image.setImageURI(imageUri);
                     detect(imageUri);
                     info.setText("上传图片中...");
@@ -140,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
                 Bitmap bitmap;
                 try {
                     bitmap = data.getExtras().getParcelable("data");
+                    imageSourceRect = new Rect(0, 0, bitmap.getWidth(),  bitmap.getHeight());
                     image.setImageBitmap(bitmap);
                     detect(bitmap);
                 } catch (ClassCastException e){
@@ -297,6 +316,22 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void success(String response) {
                         info.setText(response);
+                        response = Util.string2jsonString(response);
+
+                        Gson gson = new Gson();
+                        try{
+                            ResponseImagePro responseImagePro = gson.fromJson(response,ResponseImagePro.class);
+                            Rectangle rectangle = responseImagePro.attribute;
+                            int left = Integer.parseInt(rectangle.X);
+                            int top = Integer.parseInt(rectangle.Y);
+
+                            int right = left + Integer.parseInt(rectangle.width);
+                            int bottom = top + Integer.parseInt(rectangle.height);
+                            Rect rect = new Rect(left,top,right,bottom);
+                            image.setRect(imageSourceRect, rect);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
                     }
 
                     @Override
@@ -358,6 +393,24 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void success(String response) {
                         info.setText(response);
+
+                        response = Util.string2jsonString(response);
+
+                        Gson gson = new Gson();
+                        try{
+                            ResponseImagePro responseImagePro = gson.fromJson(response,ResponseImagePro.class);
+                            Rectangle rectangle = responseImagePro.attribute;
+                            int left = Integer.parseInt(rectangle.X);
+                            int top = Integer.parseInt(rectangle.Y);
+
+                            int right = left + Integer.parseInt(rectangle.width);
+                            int bottom = top + Integer.parseInt(rectangle.height);
+                            Rect rect = new Rect(left,top,right,bottom);
+                            image.setRect(imageSourceRect, rect);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+
                     }
 
                     @Override
@@ -388,16 +441,16 @@ public class MainActivity extends AppCompatActivity {
     void detectGender(Uri imageUri){
 
     }
-//    private Bitmap getBitmapFromAssets(){
-//        try {
-//            AssetManager assetManager = getAssets();
-//            InputStream is = assetManager.open("jiang.jpg");
-//            Bitmap bitmap = BitmapFactory.decodeStream(is);
-//            return bitmap;
-//        }catch (Exception e){
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
 
+    class Rectangle{
+        public String X;
+        public String Y;
+        public String width;
+        public String height;
+    }
+
+    class ResponseImagePro{
+        public String status;
+        public Rectangle attribute;
+    }
 }
