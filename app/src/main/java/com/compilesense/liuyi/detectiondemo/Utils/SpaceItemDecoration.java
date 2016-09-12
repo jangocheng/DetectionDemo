@@ -1,4 +1,4 @@
-package com.compilesense.liuyi.detectiondemo.Utils;
+package com.compilesense.liuyi.detectiondemo.utils;
 
 import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;

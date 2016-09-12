@@ -1,4 +1,4 @@
-package com.compilesense.liuyi.detectiondemo.Utils;
+package com.compilesense.liuyi.detectiondemo.utils;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -16,7 +16,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -73,13 +72,15 @@ public class Util {
         int a = s.indexOf("[");
         int b = s.indexOf("]");
 
-        String r;
-        if (s.charAt(a - 1) == '\"'){
-            String aa = s.substring(0, a - 1 );
-            String bb = s.substring(a, b + 1);
-            String cc = s.substring(b + 2);
-            r = aa + bb + cc;
-            return r;
+        if (a != -1 && b != -1){
+            String r;
+            if (s.charAt(a - 1) == '\"'){
+                String aa = s.substring(0, a - 1 );
+                String bb = s.substring(a, b + 1);
+                String cc = s.substring(b + 2);
+                r = aa + bb + cc;
+                return r;
+            }
         }
         return s;
     }

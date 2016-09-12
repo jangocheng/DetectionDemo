@@ -18,8 +18,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.compilesense.liuyi.detectiondemo.R;
-import com.compilesense.liuyi.detectiondemo.Utils.SpaceItemDecoration;
-import com.compilesense.liuyi.detectiondemo.Utils.Util;
+import com.compilesense.liuyi.detectiondemo.utils.SpaceItemDecoration;
+import com.compilesense.liuyi.detectiondemo.utils.Util;
 import com.compilesense.liuyi.detectiondemo.model.Person;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.ResponseListener;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.PersonManager;

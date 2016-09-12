@@ -71,7 +71,7 @@ public class RecognitionActivity extends AppCompatActivity {
         recognitionTwoFace.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                startActivity(new Intent(RecognitionActivity.this,TwoFaceRecognizeActivity.class));
             }
         });
 

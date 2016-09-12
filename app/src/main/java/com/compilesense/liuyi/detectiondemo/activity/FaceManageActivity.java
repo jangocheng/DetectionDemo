@@ -16,14 +16,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.compilesense.liuyi.detectiondemo.R;
-import com.compilesense.liuyi.detectiondemo.Utils.SpaceItemDecoration;
-import com.compilesense.liuyi.detectiondemo.Utils.Util;
+import com.compilesense.liuyi.detectiondemo.utils.SpaceItemDecoration;
+import com.compilesense.liuyi.detectiondemo.utils.Util;
 import com.compilesense.liuyi.detectiondemo.model.Face;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.ResponseListener;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.PersonManager;
-import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.Train;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.google.gson.Gson;
 
@@ -225,7 +225,21 @@ public class FaceManageActivity extends AppCompatActivity {
                                                 new ResponseListener() {
                                                     @Override
                                                     public void success(String response) {
-                                                        Log.d(TAG,"FFFFFFFFFFFFFuk:"+response);
+
+                                                        response = Util.string2jsonString(response);
+                                                        Gson gson1 = new Gson();
+                                                        try {
+                                                            ResponseRecognition responseRecognition = gson1.fromJson(response,ResponseRecognition.class);
+                                                            if (responseRecognition.status.equals("OK")){
+                                                                Toast.makeText(FaceManageActivity.this,"是同一人",Toast.LENGTH_SHORT).show();
+                                                            }else if (responseRecognition.status.equals("NO")){
+                                                                Toast.makeText(FaceManageActivity.this,"不是同一人",Toast.LENGTH_SHORT).show();
+                                                            }
+                                                        }catch (Exception e){
+                                                            e.printStackTrace();
+                                                        }
+
+
                                                     }
 
                                                     @Override
@@ -255,6 +269,11 @@ public class FaceManageActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.addItemDecoration(new SpaceItemDecoration(16));
         recyclerView.setAdapter(adapter);
+    }
+
+    class ResponseRecognition{
+        public String status;
+        public String person_id;
     }
 
     class ResponseFaceFetch{

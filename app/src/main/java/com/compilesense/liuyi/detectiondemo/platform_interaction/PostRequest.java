@@ -12,7 +12,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.Volley;
 import com.compilesense.liuyi.detectiondemo.R;
-import com.compilesense.liuyi.detectiondemo.Utils.Util;
+import com.compilesense.liuyi.detectiondemo.utils.Util;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -87,40 +87,29 @@ public class PostRequest {
                 Map<String, DataPart> params = new HashMap<>();
 
                 if (!noneUri){
-                    for (Uri bitmap :
-                            bitmapUris) {
+                    for (int i = 0; i < bitmapUris.length; i++){
+                        Uri imageUri = bitmapUris[i];
                         try {
-                            byte[] b = Util.uri2ByteArray(bitmap,context);
-                            params.put("image", new DataPart("jiang.jpg", b, "image/jpeg"));
+                            byte[] b = Util.uri2ByteArray(imageUri,context);
+                            params.put("image"+i, new DataPart("image" + i + ".jpg", b, "image/jpeg"));
                         }catch (Exception e){
                             Log.e(TAG,e.toString());
                         }
                     }
+
                 }
 
                 if (!noneBitmap){
-                    for (Bitmap bitmap : bitmaps){
+                    for (int i = 0; i < bitmaps.length; i++){
+                        Bitmap bitmap = bitmaps[i];
                         byte[] b = Util.bitmap2ByteArray(bitmap);
-                        params.put("image",new DataPart("j.jpg", b, "image/jpeg"));
+                        params.put("image" + i + 1,new DataPart("j"+i+".jpg", b, "image/jpeg"));
                     }
                 }
 
                 return params;
             }
         };
-
-        try{
-            Log.d("getBodyContentType",request.getBodyContentType());
-
-            Map<String, String> map = request.getHeaders();
-
-            for (Map.Entry entry:map.entrySet()){
-                Log.d("headers","key:" +entry.getKey());
-                Log.d("headers","value:" +entry.getValue());
-            }
-        }catch (Exception e){
-            Log.e(TAG,e.toString());
-        }
 
         queue.add(request);
     }
@@ -169,6 +158,8 @@ public class PostRequest {
     public void post(Context context, String url, Bitmap bitmap, ResponseListener listener){
         post(context,url,bitmap,null,listener);
     }
+
+
     public void post(Context context, String url, Map<String, String> extraParams, ResponseListener listener){
         Uri[] bitmaps = null;
         post(context,url,bitmaps,extraParams,listener);

@@ -1,12 +1,10 @@
 package com.compilesense.liuyi.detectiondemo.activity;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,7 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.compilesense.liuyi.detectiondemo.R;
-import com.compilesense.liuyi.detectiondemo.Utils.Util;
+import com.compilesense.liuyi.detectiondemo.utils.Util;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.ResponseListener;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.DetectAge;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.DetectGender;
