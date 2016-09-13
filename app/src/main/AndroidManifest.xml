@@ -30,6 +30,10 @@
         <activity
             android:name=".activity.TwoFaceRecognizeActivity"
             android:label="@string/title_activity_two_face_recognize"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activity.GroupManageActivity"
+            android:label="@string/title_activity_group_manage"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

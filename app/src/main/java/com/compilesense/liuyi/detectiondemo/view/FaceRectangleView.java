@@ -10,7 +10,7 @@ import android.util.Log;
 import android.widget.ImageView;
 
 /**
- * TODO: document your custom view class.
+ * 给人脸画框
  */
 public class FaceRectangleView extends ImageView {
 
@@ -54,20 +54,14 @@ public class FaceRectangleView extends ImageView {
             int t = getTop();
 
 
-            int dRLeft = (sourceFaceRect.left* w/sourceRect.width()) ;
-            int dRWidth = (sourceFaceRect.width()* w/sourceRect.width()) ;
-            int dRTop = (sourceFaceRect.top* h/sourceRect.height()) ;
-            int dRHeight = (sourceFaceRect.height() * h/sourceRect.height());
+            int dRLeft = (sourceFaceRect.left * w / sourceRect.width()) ;
+            int dRWidth = (sourceFaceRect.width() * w / sourceRect.width()) ;
+            int dRTop = (sourceFaceRect.top * h / sourceRect.height()) ;
+            int dRHeight = (sourceFaceRect.height() * h / sourceRect.height());
             faceRect.left = dRLeft;
             faceRect.top = dRTop;
             faceRect.right = dRLeft + dRWidth;
             faceRect.bottom = dRTop + dRHeight;
-
-            Rect viewRect = new Rect(l,t,l+w,t+t);
-            Log.d("faceDraw","faceRect:"+faceRect.toString());
-            Log.d("faceDraw","ViewRect:"+viewRect.toString());
-            Log.d("faceDraw","sourceRect:"+sourceRect.toString());
-            Log.d("faceDraw","sourceFaceRect:"+sourceFaceRect.toString());
             canvas.drawRect(faceRect,rectPaint);
         }
     }

@@ -29,6 +29,8 @@
     <string name="delete_face">删除人脸</string>
     <string name="recognition_face_person">与人员对比</string>
     <string name="recognition_face_group">与人群对比</string>
+    <string name="create_group">创建人群</string>
+    <string name="delete_group">删除人群</string>
     <string name="group_manage">人群管理</string>
     <string name="training_person">训练人员</string>
     <string name="training_group">训练人群</string>
@@ -44,4 +46,5 @@
     <string name="title_activity_face_manage">FaceManageActivity</string>
     <string name="title_activity_two_face_recognize">TwoFaceRecognizeActivity</string>
     <string name="recognize">识别</string>
+    <string name="title_activity_group_manage">GroupManageActivity</string>
 </resources>

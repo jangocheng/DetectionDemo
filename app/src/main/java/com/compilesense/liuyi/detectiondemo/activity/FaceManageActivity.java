@@ -5,8 +5,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -19,11 +17,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.compilesense.liuyi.detectiondemo.R;
+import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.APIManager;
 import com.compilesense.liuyi.detectiondemo.utils.SpaceItemDecoration;
 import com.compilesense.liuyi.detectiondemo.utils.Util;
 import com.compilesense.liuyi.detectiondemo.model.Face;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.ResponseListener;
-import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.PersonManager;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.google.gson.Gson;
 
@@ -31,12 +29,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class FaceManageActivity extends AppCompatActivity {
+public class FaceManageActivity extends BaseActivity {
     private final static String TAG = "FaceManageActivity";
-    private final int  REQUEST_IMAGE_ALBUM = 1, REQUEST_IMAGE_CAPTURE = 2;
     FaceRecycleViewAdapter adapter;
-    String personID;
-    public static void startFaceManageActivity(Context context, String person_id){
+    String person_id;
+    String group_id;
+    String person_name;
+    public static void startFaceManageActivity(Context context, String person_id, String person_name, String group_id){
         if (person_id == null || person_id.equals("")){
             Log.e(TAG,"缺少person_id");
             return;
@@ -44,6 +43,10 @@ public class FaceManageActivity extends AppCompatActivity {
 
         Intent intent = new Intent(context, FaceManageActivity.class);
         intent.putExtra("person_id",person_id);
+        intent.putExtra("person_name",person_name);
+        if (group_id != null){
+            intent.putExtra("group_id",group_id);
+        }
         context.startActivity(intent);
     }
 
@@ -51,84 +54,83 @@ public class FaceManageActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_face_manage);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        parseIntent();
         initView();
         fetchFace();
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    void onDialogClick(int which) {
 
-        if (resultCode != RESULT_OK){
-            return;
+    }
+
+    private void initToolbar(){
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        if (person_name != null){
+            toolbar.setTitle(person_name);
         }
+        setSupportActionBar(toolbar);
+    }
 
-        switch (requestCode){
-            case REQUEST_IMAGE_ALBUM:
-                if (data != null) {
-                    Uri imageUri = data.getData();
-                    PersonManager.getInstance().addFace(FaceManageActivity.this,
-                            imageUri,
-                            personID,
-                            new ResponseListener() {
-                                @Override
-                                public void success(String response) {
-                                    fetchFace();
-                                    Log.d("11111111111",response);
-                                }
-
-                                @Override
-                                public void failed() {
-
-                                }
-                            });
-                }
-                break;
-
-            case REQUEST_IMAGE_CAPTURE:
-
-                Bitmap bitmap;
-                try {
-                    bitmap = data.getExtras().getParcelable("data");
-                    PersonManager.getInstance().addFace(FaceManageActivity.this,
-                            bitmap,
-                            personID,
-                            new ResponseListener() {
-                                @Override
-                                public void success(String response) {
-                                    fetchFace();
-                                }
-
-                                @Override
-                                public void failed() {
-
-                                }
-                            });
-                } catch (ClassCastException e){
-                    e.printStackTrace();
-                }
-                break;
-        }
+    private void parseIntent(){
+        person_id = getIntent().getStringExtra("person_id");
+        group_id = getIntent().getStringExtra("group_id");
+        person_name = getIntent().getStringExtra("person_name");
     }
 
     private void initView(){
+        initToolbar();
         Button addFace = (Button) findViewById(R.id.add_face);
         addFace.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               buildDialog();
+               getImage(new GetImageListener() {
+                   @Override
+                   public void getImage(Uri imageUri, Bitmap bitmap) {
+                       if (imageUri != null){
+                           APIManager.getInstance().addFace(FaceManageActivity.this,
+                                   imageUri,
+                                   group_id,
+                                   person_id,
+                                   new ResponseListener() {
+                                       @Override
+                                       public void success(String response) {
+                                           fetchFace();
+                                       }
+
+                                       @Override
+                                       public void failed() {
+
+                                       }
+                                   });
+                       }else if (bitmap != null){
+                           APIManager.getInstance().addFace(FaceManageActivity.this,
+                                   bitmap,
+                                   group_id,
+                                   person_id,
+                                   new ResponseListener() {
+                                       @Override
+                                       public void success(String response) {
+                                               fetchFace();
+                                           }
+                                       @Override
+                                       public void failed() {
+
+                                           }
+                                   });
+                       }else {
+                           Toast.makeText(FaceManageActivity.this,"请选择图片",Toast.LENGTH_SHORT).show();
+                       }
+                   }
+               });
             }
         });
-
 
         initRecycleView();
     }
 
     private void fetchFace(){
-        personID = getIntent().getStringExtra("person_id");
-        PersonManager.getInstance().fetchFace(this, personID, new ResponseListener() {
+        APIManager.getInstance().fetchFace(this, person_id, new ResponseListener() {
             @Override
             public void success(String response) {
                 Gson gson = new Gson();
@@ -153,39 +155,14 @@ public class FaceManageActivity extends AppCompatActivity {
         });
     }
 
-    private void buildDialog(){
-        Util.buildImgGetDialog(FaceManageActivity.this, new Util.DialogOnClickListener() {
-            @Override
-            public void onClick(int which) {
-                if (which == 0){
-                    getPicFromAlbum();
-                }else if (which == 1){
-                    getPicFromCamera();
-                }
-
-            }
-        });
-    }
-
-    private void getPicFromAlbum(){
-        // 来自相册
-        Intent albumIntent = new Intent(Intent.ACTION_PICK, null);
-        albumIntent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
-        startActivityForResult(albumIntent, REQUEST_IMAGE_ALBUM);
-    }
-
-    private void getPicFromCamera(){
-        Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(intent, REQUEST_IMAGE_CAPTURE);
-    }
-
     private void initRecycleView(){
         adapter = new FaceRecycleViewAdapter();
         adapter.listener = new FaceViewButtonClickListener() {
             @Override
             public void onDeleteFace(int position) {
-                PersonManager.getInstance().deleteFace(FaceManageActivity.this,
-                        personID,
+                APIManager.getInstance().deleteFace(FaceManageActivity.this,
+                        group_id,
+                        person_id,
                         adapter.faceList.get(position).face_id,
                         new ResponseListener() {
                             @Override
@@ -203,7 +180,7 @@ public class FaceManageActivity extends AppCompatActivity {
             @Override
             public void onRecognizeWithPerson(final int position) {
 
-                PersonManager.getInstance().fetchPerson(FaceManageActivity.this, new ResponseListener() {
+                APIManager.getInstance().fetchPerson(FaceManageActivity.this, group_id, new ResponseListener() {
                     @Override
                     public void success(String response) {
                         response = Util.string2jsonString(response);
@@ -213,12 +190,14 @@ public class FaceManageActivity extends AppCompatActivity {
                         if (r.person == null || r.person.isEmpty()){
                             return;
                         }
+
+                        //TODO: 识别api细化
                         Util.buildChosePersonDialog(FaceManageActivity.this, r.person, new Util.DialogOnClickListener() {
                             @Override
                             public void onClick(int which) {
                                 String person_id = r.person.get(which).person_id;
 
-                                PersonManager.getInstance()
+                                APIManager.getInstance()
                                         .recognizeFacePerson(FaceManageActivity.this,
                                                 person_id,
                                                 adapter.faceList.get(position).face_id,

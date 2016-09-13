@@ -75,5 +75,13 @@ public class RecognitionActivity extends AppCompatActivity {
             }
         });
 
+        Button manageGroup = (Button) findViewById(R.id.group_manage);
+        manageGroup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(RecognitionActivity.this, GroupManageActivity.class));
+            }
+        });
+
     }
 }

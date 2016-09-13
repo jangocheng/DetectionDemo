@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
     <android.support.v7.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         card_view:cardBackgroundColor="@color/cardview_dark_background"
         card_view:contentPadding="10dp">
-
 
         <LinearLayout
             android:orientation="vertical"
@@ -23,8 +22,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
         </LinearLayout>
-    </android.support.v7.widget.CardView>
 
+    </android.support.v7.widget.CardView>
 
     <LinearLayout
         android:id="@+id/item_control"
@@ -33,12 +32,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <Button
-            android:id="@+id/item_delete_person"
-            android:text="@string/delete_person"
+            android:id="@+id/item_delete_group"
+            android:text="@string/delete_group"
             style="@style/MyButton.b2" />
         <Button
-            android:id="@+id/item_manege_face"
-            android:text="@string/manage_face"
+            android:id="@+id/item_manage_person"
+            android:text="@string/person_manage"
             style="@style/MyButton.b2" />
     </LinearLayout>
 
