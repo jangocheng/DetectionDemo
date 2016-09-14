@@ -2,10 +2,11 @@ package com.compilesense.liuyi.detectiondemo.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -20,6 +21,7 @@ import android.widget.Toast;
 
 import com.compilesense.liuyi.detectiondemo.R;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.APIManager;
+import com.compilesense.liuyi.detectiondemo.platform_interaction.RecognitionResponse;
 import com.compilesense.liuyi.detectiondemo.utils.SpaceItemDecoration;
 import com.compilesense.liuyi.detectiondemo.utils.Util;
 import com.compilesense.liuyi.detectiondemo.model.Person;
@@ -32,7 +34,7 @@ import java.util.List;
 /**
  * PersonManageActivity 有两种可能的启动情况,分别是某一人群中的人和非人群中的人
  */
-public class PersonManageActivity extends AppCompatActivity {
+public class PersonManageActivity extends BaseActivity {
     private final String TAG = "PersonManageActivity";
     PersonListAdapter adapter;
     TextView name;
@@ -125,11 +127,77 @@ public class PersonManageActivity extends AppCompatActivity {
                 FaceManageActivity.startFaceManageActivity(PersonManageActivity.this,
                         p.person_id, p.person_name, group_id);
             }
+
+            @Override
+            public void onRecognizePerson(final int position) {
+                getImage(new GetImageListener() {
+                    @Override
+                    public void getImage(Uri imageUri, Bitmap bitmap) {
+                        Person p = adapter.personList.get(position);
+                        if (imageUri != null){
+                            APIManager.getInstance().recognizeImagePerson(PersonManageActivity.this,
+                                    imageUri,
+                                    p.person_id,
+                                    new ResponseListener() {
+                                        @Override
+                                        public void success(String response) {
+                                            handRecognitionResponse(response);
+                                        }
+
+                                        @Override
+                                        public void failed() {
+
+                                        }
+                                    });
+
+                        }else if (bitmap != null){
+                            APIManager.getInstance().recognizeImagePerson(PersonManageActivity.this,
+                                    bitmap,
+                                    p.person_id,
+                                    new ResponseListener() {
+                                        @Override
+                                        public void success(String response) {
+                                            handRecognitionResponse(response);
+                                        }
+
+                                        @Override
+                                        public void failed() {
+
+                                        }
+                                    });
+                        }else {
+                            Toast.makeText(PersonManageActivity.this,
+                                    "请选择图片",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+            }
         });
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv_persons);
         recyclerView.setLayoutManager(new LinearLayoutManager(PersonManageActivity.this,LinearLayoutManager.VERTICAL,false));
         recyclerView.addItemDecoration(new SpaceItemDecoration(16));
         recyclerView.setAdapter(adapter);
+    }
+
+    private void handRecognitionResponse(String response){
+        response = Util.string2jsonString(response);
+
+        Log.d(TAG,"11111111111:"+response);
+        Gson gson = new Gson();
+        try{
+            RecognitionResponse recognitionResponse = gson.fromJson(response,RecognitionResponse.class);
+
+            if (recognitionResponse.Persons.get(0).Passed){
+                Toast.makeText(this,"识别通过",Toast.LENGTH_SHORT).show();
+            }else {
+                Toast.makeText(this,"识别未通过",Toast.LENGTH_SHORT).show();
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
     }
 
     private void addPerson(){
@@ -176,7 +244,12 @@ public class PersonManageActivity extends AppCompatActivity {
         });
     }
 
-     public class ResponseFetchPerson{
+    @Override
+    void onDialogClick(int which) {
+
+    }
+
+    public class ResponseFetchPerson{
         public String status;
         public List<Person> person;
     }
@@ -184,6 +257,7 @@ public class PersonManageActivity extends AppCompatActivity {
     interface OnItemClickListener{
         void onDeletePerson(int position);
         void onManageFace(int position);
+        void onRecognizePerson(int position);
     }
 
     class PersonListAdapter extends RecyclerView.Adapter<PersonListViewHolder>{
@@ -231,6 +305,13 @@ public class PersonManageActivity extends AppCompatActivity {
                         itemClickListener.onManageFace(p);
                     }
                 });
+
+                holder.recognizePerson.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        itemClickListener.onRecognizePerson(p);
+                    }
+                });
             }
             String name = personList.get(position).person_name;
             holder.name.setText(name);
@@ -247,7 +328,7 @@ public class PersonManageActivity extends AppCompatActivity {
         View view;
         TextView name;
         View control;
-        Button deletePerson,manageFace;
+        Button deletePerson,manageFace,recognizePerson;
 
         public PersonListViewHolder(View itemView) {
             super(itemView);
@@ -256,6 +337,7 @@ public class PersonManageActivity extends AppCompatActivity {
             control =itemView.findViewById(R.id.item_control);
             manageFace = (Button) control.findViewById(R.id.item_manege_face);
             deletePerson = (Button) control.findViewById(R.id.item_delete_person);
+            recognizePerson = (Button) control.findViewById(R.id.item_recognize_person);
             control.setVisibility(View.GONE);
 
             view.setOnClickListener(new View.OnClickListener() {

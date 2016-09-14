@@ -36,6 +36,10 @@
             android:text="@string/delete_group"
             style="@style/MyButton.b2" />
         <Button
+            android:id="@+id/item_recognize_group"
+            android:text="@string/recognize_group"
+            style="@style/MyButton.b2" />
+        <Button
             android:id="@+id/item_manage_person"
             android:text="@string/person_manage"
             style="@style/MyButton.b2" />

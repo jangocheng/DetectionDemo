@@ -1,7 +1,8 @@
 package com.compilesense.liuyi.detectiondemo.activity;
 
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -18,6 +19,7 @@ import com.compilesense.liuyi.detectiondemo.R;
 import com.compilesense.liuyi.detectiondemo.model.Group;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.ResponseListener;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.APIManager;
+import com.compilesense.liuyi.detectiondemo.platform_interaction.RecognitionResponse;
 import com.compilesense.liuyi.detectiondemo.utils.SpaceItemDecoration;
 import com.compilesense.liuyi.detectiondemo.utils.Util;
 import com.google.gson.Gson;
@@ -26,7 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class GroupManageActivity extends AppCompatActivity {
+public class GroupManageActivity extends BaseActivity {
     private final String TAG = "GroupManageActivity";
 
     ProgressBar progressBar;
@@ -67,6 +69,52 @@ public class GroupManageActivity extends AppCompatActivity {
             public void onManagePerson(int position) {
                 Group group = adapter.groupList.get(position);
                 manageGroup(group.group_id,group.group_name);
+            }
+
+            @Override
+            public void onRecognizeGroup(final int position) {
+                getImage(new GetImageListener() {
+                    @Override
+                    public void getImage(Uri imageUri, Bitmap bitmap) {
+                        Group g = adapter.groupList.get(position);
+                        if (imageUri != null){
+                            APIManager.getInstance().recognizeImageGroup(GroupManageActivity.this,
+                                    imageUri,
+                                    g.group_id,
+                                    new ResponseListener() {
+                                        @Override
+                                        public void success(String response) {
+                                            handRecognitionResponse(response);
+                                        }
+
+                                        @Override
+                                        public void failed() {
+
+                                        }
+                                    });
+
+                        }else if (bitmap != null){
+                            APIManager.getInstance().recognizeImageGroup(GroupManageActivity.this,
+                                    bitmap,
+                                    g.group_id,
+                                    new ResponseListener() {
+                                        @Override
+                                        public void success(String response) {
+                                            handRecognitionResponse(response);
+                                        }
+
+                                        @Override
+                                        public void failed() {
+
+                                        }
+                                    });
+                        }else {
+                            Toast.makeText(GroupManageActivity.this,
+                                    "请选择图片",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
             }
         };
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv_groups);
@@ -145,21 +193,48 @@ public class GroupManageActivity extends AppCompatActivity {
         PersonManageActivity.startPersonManageActivity(this, id, name);
     }
 
+    private void handRecognitionResponse(String response){
+        response = Util.string2jsonString(response);
+        Gson gson = new Gson();
+        try{
+            RecognitionResponse recognitionResponse = gson.fromJson(response,RecognitionResponse.class);
+
+
+            if (recognitionResponse.Persons.get(0).Passed){
+                Toast.makeText(this,"识别通过",Toast.LENGTH_SHORT).show();
+            }else {
+                Toast.makeText(this,"识别未通过",Toast.LENGTH_SHORT).show();
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+    @Override
+    void onDialogClick(int which) {
+
+    }
+
+
+
     class ResponseGroupFetch{
         public String status;
-        List<Group> group;
+        public List<Group> group;
     }
 
     interface ItemClickListener{
         void onDeleteGroup(int position);
         void onManagePerson(int position);
+        void onRecognizeGroup(int position);
     }
 
     class GroupViewHolder extends RecyclerView.ViewHolder{
         View itemView;
         TextView itemName;
         View itemControl;
-        Button deleteGroup, managePerson;
+        Button deleteGroup, managePerson, recognizeGroup;
 
         public GroupViewHolder(View itemView) {
             super(itemView);
@@ -168,6 +243,7 @@ public class GroupManageActivity extends AppCompatActivity {
             itemControl = itemView.findViewById(R.id.item_control);
             deleteGroup = (Button) itemView.findViewById(R.id.item_delete_group);
             managePerson = (Button) itemView.findViewById(R.id.item_manage_person);
+            recognizeGroup = (Button) itemView.findViewById(R.id.item_recognize_group);
 
             itemControl.setVisibility(View.GONE);
             itemView.setOnClickListener(new View.OnClickListener() {
@@ -216,6 +292,12 @@ public class GroupManageActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     listener.onManagePerson(holder.getAdapterPosition());
+                }
+            });
+            holder.recognizeGroup.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.onRecognizeGroup(holder.getAdapterPosition());
                 }
             });
         }

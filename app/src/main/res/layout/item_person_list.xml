@@ -37,6 +37,10 @@
             android:text="@string/delete_person"
             style="@style/MyButton.b2" />
         <Button
+            android:id="@+id/item_recognize_person"
+            android:text="@string/recognize_person"
+            style="@style/MyButton.b2" />
+        <Button
             android:id="@+id/item_manege_face"
             android:text="@string/manage_face"
             style="@style/MyButton.b2" />

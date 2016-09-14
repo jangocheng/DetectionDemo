@@ -29,6 +29,9 @@ public class APIManager {
     private final String ACTION_RECOGNIZE_FACE_PERSON = "/Recognition/RecognitionVerify";
     private final String ACTION_RECOGNIZE_FACE_GROUP = "/Recognition/RecognitionIdentify";
 
+    private final String ACTION_RECOGNIZE_IMAGE_PERSON = "/Recognition/RecognitionVerifyByArray";
+    private final String ACTION_RECOGNIZE_IMAGE_GROUP = "/Recognition/RecognitionIdentifyByArray";
+
 
     private final String ACTION_CREATE_GROUP = "/Group/CreateGroup";
     private final String ACTION_DELETE_GROUP = "/Group/DeleteGroup";
@@ -224,4 +227,41 @@ public class APIManager {
         map.put("face_id",face_id);
         PostRequest.getInstance().post(context, url, map, listener);
     }
+
+    public void recognizeFaceGroup(Context context, String group_id, String face_id, ResponseListener listener){
+        String url = context.getString(R.string.api_url) + ACTION_RECOGNIZE_FACE_GROUP;
+        Map<String, String> map = new HashMap<>();
+        map.put("group_id",group_id);
+        map.put("face_id",face_id);
+        PostRequest.getInstance().post(context, url, map, listener);
+    }
+
+    public void recognizeImagePerson(Context context, Uri imageUri, String person_id, ResponseListener listener){
+        String url = context.getString(R.string.api_url) + ACTION_RECOGNIZE_IMAGE_PERSON;
+        Map<String, String> map = new HashMap<>();
+        map.put("person_id",person_id);
+        PostRequest.getInstance().post(context, url, imageUri, map, listener);
+    }
+
+    public void recognizeImagePerson(Context context, Bitmap bitmap, String person_id, ResponseListener listener){
+        String url = context.getString(R.string.api_url) + ACTION_RECOGNIZE_IMAGE_PERSON;
+        Map<String, String> map = new HashMap<>();
+        map.put("person_id",person_id);
+        PostRequest.getInstance().post(context, url, bitmap, map, listener);
+    }
+
+    public void recognizeImageGroup(Context context, Uri imageUri, String group_id, ResponseListener listener){
+        String url = context.getString(R.string.api_url) + ACTION_RECOGNIZE_IMAGE_GROUP;
+        Map<String, String> map = new HashMap<>();
+        map.put("group_id",group_id);
+        PostRequest.getInstance().post(context, url, imageUri, map, listener);
+    }
+
+    public void recognizeImageGroup(Context context, Bitmap bitmap, String group_id, ResponseListener listener){
+        String url = context.getString(R.string.api_url) + ACTION_RECOGNIZE_IMAGE_GROUP;
+        Map<String, String> map = new HashMap<>();
+        map.put("group_id",group_id);
+        PostRequest.getInstance().post(context, url, bitmap, map, listener);
+    }
+
 }

@@ -15,6 +15,15 @@ import java.util.Map;
  * Created by shenjingyuan002 on 16/9/7.
  */
 public class Train {
+    public static final String STATUS_WAITING1 ="Created";
+    public static final String STATUS_WAITING2 ="WaitingForActivation";
+    public static final String STATUS_WAITING3 ="WaitingToRun";
+    public static final String STATUS_WAITING4 ="Running";
+    public static final String STATUS_WAITING5 ="WaitingForChildrenToComplete";
+    public static final String STATUS_SUCCESS ="RanToCompletion";
+    public static final String STATUS_FAILED ="Faulted";
+
+
     private final String ACTION_TRAIN_PERSON = "/Train/TrainPerson";
     private final String ACTION_TRAIN_GROUP = "/Train/TrainGroup";
     private final String ACTION_TRAIN_SATE = "/Info/TrainState/";
@@ -23,8 +32,6 @@ public class Train {
     public static Train getInstance() {
         return instance;
     }
-
-    public static String task_id = "1872";
 
     public void trainState(Context context, String task_id, ResponseListener listener){
 
@@ -43,6 +50,8 @@ public class Train {
 
     public void trainGroup(Context context, String group_id, ResponseListener listener){
         String url = context.getString(R.string.api_url) + ACTION_TRAIN_GROUP;
-        FetchData.getInstance().fetch(context, url, listener);
+        Map<String, String> map = new HashMap<>();
+        map.put("group_id",group_id);
+        FetchData.getInstance().fetch(context, url, map, listener);
     }
 }

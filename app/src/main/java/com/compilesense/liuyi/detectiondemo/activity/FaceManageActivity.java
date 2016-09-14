@@ -17,7 +17,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.compilesense.liuyi.detectiondemo.R;
+import com.compilesense.liuyi.detectiondemo.model.Group;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.APIManager;
+import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.Train;
 import com.compilesense.liuyi.detectiondemo.utils.SpaceItemDecoration;
 import com.compilesense.liuyi.detectiondemo.utils.Util;
 import com.compilesense.liuyi.detectiondemo.model.Face;
@@ -191,7 +193,6 @@ public class FaceManageActivity extends BaseActivity {
                             return;
                         }
 
-                        //TODO: 识别api细化
                         Util.buildChosePersonDialog(FaceManageActivity.this, r.person, new Util.DialogOnClickListener() {
                             @Override
                             public void onClick(int which) {
@@ -241,13 +242,68 @@ public class FaceManageActivity extends BaseActivity {
 
             @Override
             public void onRecognizeWithGroup(int position) {
-
+                recognizeWithGroup(position);
             }
         };
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv_face_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.addItemDecoration(new SpaceItemDecoration(16));
         recyclerView.setAdapter(adapter);
+    }
+
+    private void recognizeWithGroup(final int position){
+        APIManager.getInstance().fetchGroup(FaceManageActivity.this, new ResponseListener() {
+            @Override
+            public void success(String response) {
+                response = Util.string2jsonString(response);
+                Gson gson = new Gson();
+                try {
+                    ResponseGroupFetch responseGroupFetch = gson.fromJson(response, ResponseGroupFetch.class);
+                    final List<Group> groups = responseGroupFetch.group;
+
+                    if ( groups == null || groups.isEmpty()){
+                        Toast.makeText(FaceManageActivity.this,"本账号下没有人群",Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    Util.buildChooseGroupDialog(FaceManageActivity.this, groups,
+                            new Util.DialogOnClickListener() {
+                                @Override
+                                public void onClick(int which) {
+                                    APIManager.getInstance().recognizeFaceGroup(FaceManageActivity.this,
+                                            groups.get(which).group_id,
+                                            adapter.faceList.get(position).face_id,
+                                            new ResponseListener() {
+                                                @Override
+                                                public void success(String response) {
+                                                    Log.d(TAG,response);
+                                                }
+
+                                                @Override
+                                                public void failed() {
+
+                                                }
+                                            }
+                                    );
+                                }
+                            });
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+
+            }
+
+            @Override
+            public void failed() {
+
+            }
+        });
+    }
+
+    class ResponseGroupFetch{
+        public String status;
+        public List<Group> group;
     }
 
     class ResponseRecognition{
@@ -265,6 +321,7 @@ public class FaceManageActivity extends BaseActivity {
         void onRecognizeWithPerson(int position);
         void onRecognizeWithGroup(int position);
     }
+
     class FaceViewHolder extends RecyclerView.ViewHolder{
         TextView faceId;
         SimpleDraweeView imageView;
@@ -315,19 +372,22 @@ public class FaceManageActivity extends BaseActivity {
                 }
             });
 
-            holder.recognizeWithPerson.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    listener.onRecognizeWithPerson(p);
-                }
-            });
+//            holder.recognizeWithPerson.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    listener.onRecognizeWithPerson(p);
+//                }
+//            });
+//
+//            holder.recognizeWithGroup.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    listener.onRecognizeWithGroup(p);
+//                }
+//            });
 
-            holder.recognizeWithGroup.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    listener.onRecognizeWithGroup(p);
-                }
-            });
+            holder.recognizeWithGroup.setVisibility(View.GONE);
+            holder.recognizeWithPerson.setVisibility(View.GONE);
 
         }
 

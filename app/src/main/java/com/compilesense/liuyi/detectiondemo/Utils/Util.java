@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 
 import com.compilesense.liuyi.detectiondemo.R;
+import com.compilesense.liuyi.detectiondemo.model.Group;
 import com.compilesense.liuyi.detectiondemo.model.Person;
 
 import java.io.ByteArrayOutputStream;
@@ -49,6 +50,29 @@ public class Util {
 
         for (int i = 0 ; i < personList.size() ; i++){
             a[i] = personList.get(i).person_name;
+        }
+
+        builder.setTitle(context.getString(R.string.dialog_person_chose))
+                .setItems(a, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        listener.onClick(which);
+                    }
+                })
+                .create().show();
+    }
+
+    public static void buildChooseGroupDialog(Context context, List<Group> groupList, final DialogOnClickListener listener){
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        if (groupList == null || groupList.isEmpty()){
+            builder.setTitle(context.getString(R.string.dialog_person_chose))
+                    .create().show();
+            return;
+        }
+        String[] a = new String[groupList.size()];
+
+        for (int i = 0 ; i < groupList.size() ; i++){
+            a[i] = groupList.get(i).group_name;
         }
 
         builder.setTitle(context.getString(R.string.dialog_person_chose))
