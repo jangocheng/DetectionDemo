@@ -55,5 +55,8 @@
     <string name="title_activity_group_manage">GroupManageActivity</string>
     <string name="title_activity_faceset_manage">FaceSetManageActivity</string>
 
+    <!--Toast-->
+    <string name="network_fail">网络访问出错</string>
+    <string name="recognize_face_ing">正在识别，等稍后...</string>
 
 </resources>
