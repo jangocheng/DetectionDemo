@@ -6,8 +6,12 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.util.Log;
+
 import android.widget.ImageView;
+
+import com.compilesense.liuyi.detectiondemo.model.bean.KeyPointBean;
+
+import java.util.List;
 
 /**
  * 给人脸画框
@@ -16,6 +20,7 @@ public class FaceRectangleView extends ImageView {
 
     private Rect sourceRect;
     private Rect sourceFaceRect;
+    private List<KeyPointBean.FacesBean.PointsBean> sourceFacePoints;
     private Rect faceRect = new Rect();
     Paint rectPaint;
 
@@ -32,6 +37,11 @@ public class FaceRectangleView extends ImageView {
     public void setRect(Rect sourceRect, Rect rect) {
         this.sourceFaceRect = rect;
         this.sourceRect = sourceRect;
+        invalidate();
+    }
+
+    public void setPoints(List<KeyPointBean.FacesBean.PointsBean> sourceFacePoints) {
+        this.sourceFacePoints = sourceFacePoints;
         invalidate();
     }
 
@@ -63,6 +73,13 @@ public class FaceRectangleView extends ImageView {
             faceRect.right = dRLeft + dRWidth;
             faceRect.bottom = dRTop + dRHeight;
             canvas.drawRect(faceRect,rectPaint);
+        }
+
+        if (sourceFacePoints!=null && sourceFacePoints.size() >0){
+            for (KeyPointBean.FacesBean.PointsBean point : sourceFacePoints) {
+                canvas.drawPoint(Integer.parseInt(point.getX())+0.5f,Integer.parseInt(point.getY())+0.5f,rectPaint);
+            }
+
         }
     }
 

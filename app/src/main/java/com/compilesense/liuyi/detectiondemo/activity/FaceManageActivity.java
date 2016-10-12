@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,7 +38,16 @@ public class FaceManageActivity extends BaseActivity {
     String person_id;
     String group_id;
     String person_name;
-    public static void startFaceManageActivity(Context context, String person_id, String person_name, String group_id){
+    String faceset_id;
+    public static void startFaceManageActivity(Context context, String person_id, String person_name, String group_id,String  faceset_id){
+        //由FaceSetManageActivity跳转过来
+        if (!TextUtils.isEmpty(faceset_id) ){
+            Intent intent = new Intent(context, FaceManageActivity.class);
+            intent.putExtra("faceset_id",faceset_id);
+            context.startActivity(intent);
+            return;
+        }
+
         if (person_id == null || person_id.equals("")){
             Log.e(TAG,"缺少person_id");
             return;
@@ -51,6 +61,8 @@ public class FaceManageActivity extends BaseActivity {
         }
         context.startActivity(intent);
     }
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,61 +89,79 @@ public class FaceManageActivity extends BaseActivity {
     private void parseIntent(){
         person_id = getIntent().getStringExtra("person_id");
         group_id = getIntent().getStringExtra("group_id");
+        faceset_id = getIntent().getStringExtra("faceset_id");
         person_name = getIntent().getStringExtra("person_name");
+
     }
 
     private void initView(){
         initToolbar();
-        Button addFace = (Button) findViewById(R.id.add_face);
+        final Button addFace = (Button) findViewById(R.id.add_face);
         addFace.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               getImage(new GetImageListener() {
-                   @Override
-                   public void getImage(Uri imageUri, Bitmap bitmap) {
-                       if (imageUri != null){
-                           APIManager.getInstance().addFace(FaceManageActivity.this,
-                                   imageUri,
-                                   group_id,
-                                   person_id,
-                                   new ResponseListener() {
-                                       @Override
-                                       public void success(String response) {
-                                           fetchFace();
-                                       }
-
-                                       @Override
-                                       public void failed() {
-
-                                       }
-                                   });
-                       }else if (bitmap != null){
-                           APIManager.getInstance().addFace(FaceManageActivity.this,
-                                   bitmap,
-                                   group_id,
-                                   person_id,
-                                   new ResponseListener() {
-                                       @Override
-                                       public void success(String response) {
-                                               fetchFace();
-                                           }
-                                       @Override
-                                       public void failed() {
-
-                                           }
-                                   });
-                       }else {
-                           Toast.makeText(FaceManageActivity.this,"请选择图片",Toast.LENGTH_SHORT).show();
-                       }
-                   }
-               });
+                    addFace();
             }
+
+
         });
 
         initRecycleView();
     }
+    //添加人脸到人员
+    private void addFace() {
+        getImage(new GetImageListener() {
+            @Override
+            public void getImage(Uri imageUri, Bitmap bitmap) {
+                if (imageUri != null){
+                    APIManager.getInstance().addFace(FaceManageActivity.this,
+                            imageUri,
+                            group_id,
+                            person_id,
+                            faceset_id,
+                            new ResponseListener() {
+                                @Override
+                                public void success(String response) {
+                                    fetchFace();
+                                }
+
+                                @Override
+                                public void failed() {
+                                    Toast.makeText(FaceManageActivity.this,
+                                            "添加失败",
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                }else if (bitmap != null){
+                    APIManager.getInstance().addFace(FaceManageActivity.this,
+                            bitmap,
+                            group_id,
+                            person_id,
+                            faceset_id,
+                            new ResponseListener() {
+                                @Override
+                                public void success(String response) {
+                                    fetchFace();
+                                }
+                                @Override
+                                public void failed() {
+                                    Toast.makeText(FaceManageActivity.this,
+                                            "添加失败",
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                }else {
+                    Toast.makeText(FaceManageActivity.this,"请选择图片",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
 
     private void fetchFace(){
+        if (!TextUtils.isEmpty(faceset_id)){
+            person_id=faceset_id;
+        }
         APIManager.getInstance().fetchFace(this, person_id, new ResponseListener() {
             @Override
             public void success(String response) {
@@ -152,6 +182,9 @@ public class FaceManageActivity extends BaseActivity {
 
             @Override
             public void failed() {
+                Toast.makeText(FaceManageActivity.this,
+                        "获取人脸失败",
+                        Toast.LENGTH_SHORT).show();
 
             }
         });
@@ -166,6 +199,7 @@ public class FaceManageActivity extends BaseActivity {
                         group_id,
                         person_id,
                         adapter.faceList.get(position).face_id,
+                        faceset_id,
                         new ResponseListener() {
                             @Override
                             public void success(String response) {
@@ -174,7 +208,9 @@ public class FaceManageActivity extends BaseActivity {
 
                             @Override
                             public void failed() {
-
+                                Toast.makeText(FaceManageActivity.this,
+                                        "删除失败",
+                                        Toast.LENGTH_SHORT).show();
                             }
                         });
             }

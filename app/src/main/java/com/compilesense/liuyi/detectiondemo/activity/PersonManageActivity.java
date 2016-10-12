@@ -57,9 +57,6 @@ public class PersonManageActivity extends BaseActivity {
         setContentView(R.layout.activity_person_manage);
 
         parseIntent();
-
-
-
         initView();
         fetchPerson();
     }
@@ -81,6 +78,7 @@ public class PersonManageActivity extends BaseActivity {
         initToolbar();
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         initRecycleView();
+        //添加人员
         Button addPerson = (Button) findViewById(R.id.add_person);
         addPerson.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -116,7 +114,9 @@ public class PersonManageActivity extends BaseActivity {
 
                             @Override
                             public void failed() {
-
+                                Toast.makeText(PersonManageActivity.this,
+                                        "删除失败",
+                                        Toast.LENGTH_SHORT).show();
                             }
                         });
             }
@@ -125,7 +125,7 @@ public class PersonManageActivity extends BaseActivity {
             public void onManageFace(int position) {
                 Person p = adapter.personList.get(position);
                 FaceManageActivity.startFaceManageActivity(PersonManageActivity.this,
-                        p.person_id, p.person_name, group_id);
+                        p.person_id, p.person_name, group_id,null);
             }
 
             @Override
@@ -213,7 +213,9 @@ public class PersonManageActivity extends BaseActivity {
 
                     @Override
                     public void failed() {
-
+                        Toast.makeText(PersonManageActivity.this,
+                                "添加失败",
+                                Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -223,10 +225,12 @@ public class PersonManageActivity extends BaseActivity {
         APIManager.getInstance().fetchPerson(this, group_id, new ResponseListener() {
             @Override
             public void success(String response) {
-                progressBar.setVisibility(View.INVISIBLE);
+
+                progressBar.setVisibility(View.GONE);
                 Gson gson = new Gson();
                 try {
                     response = Util.string2jsonString(response);
+                    Log.e(TAG,"人员数据:"+response);
                     ResponseFetchPerson responseFetchPerson = gson.fromJson(response,ResponseFetchPerson.class);
                     if (responseFetchPerson.person == null){
                         return;
@@ -239,7 +243,10 @@ public class PersonManageActivity extends BaseActivity {
 
             @Override
             public void failed() {
-                progressBar.setVisibility(View.INVISIBLE);
+                Toast.makeText(PersonManageActivity.this,
+                        "获取人员失败",
+                        Toast.LENGTH_SHORT).show();
+                progressBar.setVisibility(View.GONE);
             }
         });
     }

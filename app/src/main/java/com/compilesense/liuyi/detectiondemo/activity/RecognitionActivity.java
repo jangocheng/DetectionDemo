@@ -37,13 +37,14 @@ public class RecognitionActivity extends AppCompatActivity {
     }
 
     void initView(){
+        //人员管理
         findViewById(R.id.person_manage).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(RecognitionActivity.this,PersonManageActivity.class));
             }
         });
-
+        //训练人员
         Button trainPerson = (Button) findViewById(R.id.training_person);
         trainPerson.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -78,7 +79,7 @@ public class RecognitionActivity extends AppCompatActivity {
                 });
             }
         });
-
+        //获取训练状态
         Button trainSate = (Button) findViewById(R.id.train_state);
         trainSate.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -123,7 +124,7 @@ public class RecognitionActivity extends AppCompatActivity {
                 });
             }
         });
-
+        //两人对比
         final Button recognitionTwoFace = (Button) findViewById(R.id.recognition_two_face);
         recognitionTwoFace.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -131,7 +132,7 @@ public class RecognitionActivity extends AppCompatActivity {
                 startActivity(new Intent(RecognitionActivity.this,TwoFaceRecognizeActivity.class));
             }
         });
-
+        //人群管理
         Button manageGroup = (Button) findViewById(R.id.group_manage);
         manageGroup.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -140,10 +141,12 @@ public class RecognitionActivity extends AppCompatActivity {
             }
         });
 
+        //训练人群
         Button trainGroup = (Button) findViewById(R.id.training_group);
         trainGroup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //1.获取本账号下的人群信息
                 APIManager.getInstance().fetchGroup(RecognitionActivity.this, new ResponseListener() {
                     @Override
                     public void success(String response) {
@@ -162,6 +165,7 @@ public class RecognitionActivity extends AppCompatActivity {
                                     new Util.DialogOnClickListener() {
                                         @Override
                                         public void onClick(int which) {
+                                            //2.训练当前组人群
                                             Train.getInstance().trainGroup(RecognitionActivity.this,
                                                     groups.get(which).group_id,
                                                     new ResponseListener() {
@@ -206,6 +210,15 @@ public class RecognitionActivity extends AppCompatActivity {
 
                     }
                 });
+            }
+        });
+
+        //人脸集管理
+        Button manageFaceSet = (Button) findViewById(R.id.faceset_manage);
+        manageFaceSet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(RecognitionActivity.this, FaceSetManageActivity.class));
             }
         });
     }

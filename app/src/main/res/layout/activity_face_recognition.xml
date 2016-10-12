@@ -25,6 +25,10 @@
                 android:text="@string/group_manage"
                 style="@style/MyButton" />
             <Button
+                android:id="@+id/faceset_manage"
+                android:text="@string/faceset_manage"
+                style="@style/MyButton" />
+            <Button
                 android:id="@+id/training_person"
                 android:text="@string/training_person"
                 style="@style/MyButton" />

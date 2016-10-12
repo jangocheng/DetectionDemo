@@ -1,8 +1,12 @@
 package com.compilesense.liuyi.detectiondemo.activity;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -16,10 +20,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.compilesense.liuyi.detectiondemo.R;
+import com.compilesense.liuyi.detectiondemo.model.FaceSet;
 import com.compilesense.liuyi.detectiondemo.model.Group;
+import com.compilesense.liuyi.detectiondemo.model.Person;
+import com.compilesense.liuyi.detectiondemo.platform_interaction.RecognitionResponse;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.ResponseListener;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.APIManager;
-import com.compilesense.liuyi.detectiondemo.platform_interaction.RecognitionResponse;
 import com.compilesense.liuyi.detectiondemo.utils.SpaceItemDecoration;
 import com.compilesense.liuyi.detectiondemo.utils.Util;
 import com.google.gson.Gson;
@@ -28,139 +34,109 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class GroupManageActivity extends BaseActivity {
-    private final String TAG = "GroupManageActivity";
+public class FaceSetManageActivity extends BaseActivity {
+    private final String TAG = "FaceSetManageActivity";
 
     ProgressBar progressBar;
-    GroupRecViewAdapter adapter;
+    FaceSetRecViewAdapter adapter;
     TextView name,tag;
+    String group_id = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_group_manage);
+        setContentView(R.layout.activity_faceset_manage);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         initView();
-        fetchGroup();
+        fetchFaceSet();
     }
 
     void initView(){
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
-        name = (TextView) findViewById(R.id.add_group_name);
-        tag = (TextView) findViewById(R.id.add_group_tag);
-        findViewById(R.id.create_group).setOnClickListener(new View.OnClickListener() {
+        name = (TextView) findViewById(R.id.add_faceset_name);
+        tag = (TextView) findViewById(R.id.add_faceset_tag);
+        findViewById(R.id.create_faceset).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                createGroup();
+                createFaceSet();
             }
         });
         initRecycleView();
     }
 
     void initRecycleView(){
-        adapter = new GroupRecViewAdapter();
+        adapter = new FaceSetRecViewAdapter();
         adapter.listener = new ItemClickListener() {
             @Override
-            public void onDeleteGroup(int position) {
-                deleteGroup(adapter.groupList.get(position).group_id);
+            public void onDeleteFaceSet(int position) {
+                deleteFaceSet(adapter.faceSetList.get(position).faceset_id);
             }
 
             @Override
-            public void onManagePerson(int position) {
-                Group group = adapter.groupList.get(position);
-                manageGroup(group.group_id,group.group_name);
+            public void onManageFaceSet(int position) {
+
+                FaceSet faceSet = adapter.faceSetList.get(position);
+                FaceManageActivity.startFaceManageActivity(FaceSetManageActivity.this,null,null,null,
+                        faceSet.faceset_id);
+
             }
 
             @Override
             public void onRecognizeGroup(final int position) {
-                getImage(new GetImageListener() {
-                    @Override
-                    public void getImage(Uri imageUri, Bitmap bitmap) {
-                        Group g = adapter.groupList.get(position);
-                        if (imageUri != null){
-                            APIManager.getInstance().recognizeImageGroup(GroupManageActivity.this,
-                                    imageUri,
-                                    g.group_id,
-                                    new ResponseListener() {
-                                        @Override
-                                        public void success(String response) {
-                                            handRecognitionResponse(response);
-                                        }
 
-                                        @Override
-                                        public void failed() {
-
-                                        }
-                                    });
-
-                        }else if (bitmap != null){
-                            APIManager.getInstance().recognizeImageGroup(GroupManageActivity.this,
-                                    bitmap,
-                                    g.group_id,
-                                    new ResponseListener() {
-                                        @Override
-                                        public void success(String response) {
-                                            handRecognitionResponse(response);
-                                        }
-
-                                        @Override
-                                        public void failed() {
-
-                                        }
-                                    });
-                        }else {
-                            Toast.makeText(GroupManageActivity.this,
-                                    "请选择图片",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
             }
         };
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv_groups);
-        recyclerView.setLayoutManager(new LinearLayoutManager(GroupManageActivity.this));
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv_faceset);
+        recyclerView.setLayoutManager(new LinearLayoutManager(FaceSetManageActivity.this));
         recyclerView.addItemDecoration(new SpaceItemDecoration(16));
         recyclerView.setAdapter(adapter);
     }
 
-    void createGroup(){
+    void createFaceSet(){
         String nameString = name.getText().toString();
         String tagString = tag.getText().toString();
         if (nameString == null || nameString.equals("")){
             Toast.makeText(this,"name不能为空",Toast.LENGTH_SHORT).show();
             return;
         }
-        APIManager.getInstance().createGroup(this,
+        progressBar.setVisibility(View.VISIBLE);
+        APIManager.getInstance().createFaceSet(this,
                 nameString,
                 tagString,
                 new ResponseListener() {
                     @Override
                     public void success(String response) {
-                        fetchGroup();
+                        progressBar.setVisibility(View.GONE);
+                        fetchFaceSet();
+
                     }
 
                     @Override
                     public void failed() {
-                        Toast.makeText(GroupManageActivity.this,
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(FaceSetManageActivity.this,
                                 "添加失败",
                                 Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
-    void fetchGroup(){
-        APIManager.getInstance().fetchGroup(this, new ResponseListener() {
+    void fetchFaceSet(){
+        APIManager.getInstance().fetchFaceSet(this, new ResponseListener() {
             @Override
             public void success(String response) {
                 response = Util.string2jsonString(response);
                 Gson gson = new Gson();
                 try {
-                    ResponseGroupFetch responseGroupFetch = gson.fromJson(response, ResponseGroupFetch.class);
-                    if (responseGroupFetch.group == null){
-                        responseGroupFetch.group = Collections.EMPTY_LIST;
+                    ResponseFaceSetFetch responseGroupFetch = gson.fromJson(response, ResponseFaceSetFetch.class);
+                    if (responseGroupFetch.faceset == null){
+                        responseGroupFetch.faceset = Collections.EMPTY_LIST;
+                        Toast.makeText(FaceSetManageActivity.this,
+                                "该账号下没有人脸集，请添加",
+                                Toast.LENGTH_SHORT).show();
                     }
 
-                    adapter.setGroupList( responseGroupFetch.group );
+                    adapter.setFaceSetList( responseGroupFetch.faceset );
 
                 }catch (Exception e){
                     e.printStackTrace();
@@ -172,33 +148,31 @@ public class GroupManageActivity extends BaseActivity {
 
             @Override
             public void failed() {
-                Toast.makeText(GroupManageActivity.this,
-                        "获取人群失败",
+                Toast.makeText(FaceSetManageActivity.this,
+                        "获取人脸集失败",
                         Toast.LENGTH_SHORT).show();
                 progressBar.setVisibility(View.GONE);
             }
         });
     }
 
-    void deleteGroup(String id){
-        APIManager.getInstance().deleteGroup(this, id, new ResponseListener() {
+    void deleteFaceSet(String id){
+        APIManager.getInstance().deleteFaceSet(this, id, new ResponseListener() {
             @Override
             public void success(String response) {
-                fetchGroup();
+               fetchFaceSet();
             }
 
             @Override
             public void failed() {
-                Toast.makeText(GroupManageActivity.this,
+                Toast.makeText(FaceSetManageActivity.this,
                         "删除失败",
                         Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    void manageGroup(String id, String name){
-        PersonManageActivity.startPersonManageActivity(this, id, name);
-    }
+
 
     private void handRecognitionResponse(String response){
         response = Util.string2jsonString(response);
@@ -226,30 +200,30 @@ public class GroupManageActivity extends BaseActivity {
 
 
 
-    class ResponseGroupFetch{
+    class ResponseFaceSetFetch{
         public String status;
-        public List<Group> group;
+        public List<FaceSet> faceset;
     }
 
     interface ItemClickListener{
-        void onDeleteGroup(int position);
-        void onManagePerson(int position);
+        void onDeleteFaceSet(int position);
+        void onManageFaceSet(int position);
         void onRecognizeGroup(int position);
     }
 
-    class GroupViewHolder extends RecyclerView.ViewHolder{
+    class FaceSetViewHolder extends RecyclerView.ViewHolder{
         View itemView;
         TextView itemName;
         View itemControl;
-        Button deleteGroup, managePerson, recognizeGroup;
+        Button deleteFaceSet, manageFaceSet, recognizeGroup;
 
-        public GroupViewHolder(View itemView) {
+        public FaceSetViewHolder(View itemView) {
             super(itemView);
             this.itemView = itemView;
             itemName = (TextView) itemView.findViewById(R.id.item_name);
             itemControl = itemView.findViewById(R.id.item_control);
-            deleteGroup = (Button) itemView.findViewById(R.id.item_delete_group);
-            managePerson = (Button) itemView.findViewById(R.id.item_manage_person);
+            deleteFaceSet = (Button) itemView.findViewById(R.id.item_delete_faceset);
+            manageFaceSet = (Button) itemView.findViewById(R.id.item_manage_faceset);
             recognizeGroup = (Button) itemView.findViewById(R.id.item_recognize_group);
 
             itemControl.setVisibility(View.GONE);
@@ -266,39 +240,39 @@ public class GroupManageActivity extends BaseActivity {
         }
     }
 
-    class GroupRecViewAdapter extends RecyclerView.Adapter<GroupViewHolder>{
+    class FaceSetRecViewAdapter extends RecyclerView.Adapter<FaceSetViewHolder>{
         public ItemClickListener listener;
-        public List<Group> groupList = new ArrayList<>();
+        public List<FaceSet> faceSetList = new ArrayList<>();
 
-        public void setGroupList(List<Group> groupList) {
-            this.groupList = groupList;
-            Log.d(TAG,"groupList.size:"+groupList.size());
+        public void setFaceSetList(List<FaceSet> faceSetList) {
+            this.faceSetList = faceSetList;
+            Log.d(TAG,"groupList.size:"+faceSetList.size());
             notifyDataSetChanged();
         }
 
         @Override
-        public GroupViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_group_list,parent,false);
-            return new GroupViewHolder(v);
+        public FaceSetViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_faceset_list,parent,false);
+            return new FaceSetViewHolder(v);
         }
 
         @Override
-        public void onBindViewHolder(final GroupViewHolder holder, int position) {
+        public void onBindViewHolder(final FaceSetViewHolder holder, int position) {
             if (listener == null){
                 return;
             }
-            Group group = groupList.get(position);
-            holder.itemName.setText(group.group_name);
-            holder.deleteGroup.setOnClickListener(new View.OnClickListener() {
+            FaceSet faceSet = faceSetList.get(position);
+            holder.itemName.setText(faceSet.faceset_name);
+            holder.deleteFaceSet.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    listener.onDeleteGroup(holder.getAdapterPosition());
+                    listener.onDeleteFaceSet(holder.getAdapterPosition());
                 }
             });
-            holder.managePerson.setOnClickListener(new View.OnClickListener() {
+            holder.manageFaceSet.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    listener.onManagePerson(holder.getAdapterPosition());
+                    listener.onManageFaceSet(holder.getAdapterPosition());
                 }
             });
             holder.recognizeGroup.setOnClickListener(new View.OnClickListener() {
@@ -311,7 +285,7 @@ public class GroupManageActivity extends BaseActivity {
 
         @Override
         public int getItemCount() {
-            return groupList.size();
+            return faceSetList.size();
         }
     }
 

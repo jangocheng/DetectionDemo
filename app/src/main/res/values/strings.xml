@@ -1,7 +1,7 @@
 <resources>
 
     <!--api-->
-    <string name="api_url">http://182.139.169.64:8888</string>
+    <string name="api_url">http://182.139.169.23:8888</string>
     <string name="app_name">DetectionDemo</string>
     <string name="api_id">7B871498-78EA-435E-887C-D2CA750B6E34</string>
     <string name="api_secret">432EFBE19D3C6BDA857C2134E7EA6F09</string>
@@ -39,6 +39,10 @@
     <string name="training_state">训练状态</string>
     <string name="tow_person_recognition">两人对比</string>
     <string name="one_recognition">识别一人</string>
+    <string name="faceset_manage">人脸集管理</string>
+    <string name="create_faceset">创建人脸集</string>
+    <string name="delete_faceset">删除人脸集</string>
+    <string name="manage_faceset">人脸集管理</string>
 
     <!--对话框-->
     <string name="dialog_img_get_title">选择照片</string>
@@ -49,4 +53,7 @@
     <string name="title_activity_two_face_recognize">TwoFaceRecognizeActivity</string>
     <string name="recognize">识别</string>
     <string name="title_activity_group_manage">GroupManageActivity</string>
+    <string name="title_activity_faceset_manage">FaceSetManageActivity</string>
+
+
 </resources>

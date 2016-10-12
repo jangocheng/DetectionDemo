@@ -17,7 +17,11 @@ public abstract class BaseActivity extends AppCompatActivity {
     private final String TAG = "BaseActivity";
     private final int  REQUEST_IMAGE_ALBUM = 1, REQUEST_IMAGE_CAPTURE = 2;
 
-    private GetImageListener listener;
+    private GetImageListener
+
+
+
+            listener;
     private boolean busy = false;
     abstract void onDialogClick(int which);
 
@@ -52,6 +56,9 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     /**
+     *
+     *
+     *
      * 创建对话框获取图片
      */
     public void getImage(GetImageListener listener){

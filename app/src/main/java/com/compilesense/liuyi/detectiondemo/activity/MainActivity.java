@@ -1,24 +1,21 @@
 package com.compilesense.liuyi.detectiondemo.activity;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Rect;
-import android.media.FaceDetector;
 import android.net.Uri;
-import android.preference.PreferenceManager;
 import android.provider.MediaStore;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.compilesense.liuyi.detectiondemo.model.bean.FaceBean;
+import com.compilesense.liuyi.detectiondemo.model.bean.KeyPointBean;
 import com.compilesense.liuyi.detectiondemo.view.FaceRectangleView;
 import com.compilesense.liuyi.detectiondemo.R;
 import com.compilesense.liuyi.detectiondemo.utils.Util;
@@ -30,8 +27,11 @@ import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.DetectKeyP
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.google.gson.Gson;
 
-import java.io.File;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
+import java.util.List;
 
 public class MainActivity extends BaseActivity {
     private static final String TAG = "MainActivity";
@@ -97,6 +97,8 @@ public class MainActivity extends BaseActivity {
             public void onClick(View v) {
                 action = ACTION_DETECT_AGE;
                 getImage(listener);
+
+
             }
         });
 
@@ -143,11 +145,14 @@ public class MainActivity extends BaseActivity {
 
     void detect(Bitmap bitmap){
         switch (action){
-            case ACTION_DETECT_AGE:
-                DetectAge.getInstance().detect(MainActivity.this, bitmap, new ResponseListener() {
+            case ACTION_DETECT_AGE://年龄检测
+
+               DetectAge.getInstance().detect(MainActivity.this, bitmap, new ResponseListener() {
                     @Override
                     public void success(String response) {
-                        info.setText(response);
+                       System.out.print("======================年龄检测返回值=======================>"+response);
+                        //处理数据
+                        detectionFace(response,"age");
                     }
 
                     @Override
@@ -157,11 +162,14 @@ public class MainActivity extends BaseActivity {
                 });
                 break;
 
-            case ACTION_DETECT_GENDER:
+            case ACTION_DETECT_GENDER://性别检测
                 DetectGender.getInstance().detect(MainActivity.this, bitmap, new ResponseListener() {
                     @Override
                     public void success(String response) {
-                        info.setText(response);
+                        System.out.print("======================性别检测返回值=======================>"+response);
+                        //处理数据
+                        detectionFace(response,"gender");
+
                     }
 
                     @Override
@@ -171,24 +179,16 @@ public class MainActivity extends BaseActivity {
                 });
                 break;
 
-            case ACTION_DETECT_IMAGE_POR:
+            case ACTION_DETECT_IMAGE_POR://人脸检测
                 DetectImgProperties.getInstance().detect(MainActivity.this, bitmap, new ResponseListener() {
                     @Override
                     public void success(String response) {
                         info.setText(response);
-                        response = Util.string2jsonString(response);
-
                         Gson gson = new Gson();
                         try{
-                            ResponseImagePro responseImagePro = gson.fromJson(response,ResponseImagePro.class);
-                            Rectangle rectangle = responseImagePro.attribute;
-                            int left = Integer.parseInt(rectangle.X);
-                            int top = Integer.parseInt(rectangle.Y);
-                            int right = left + Integer.parseInt(rectangle.width);
-                            int bottom = top + Integer.parseInt(rectangle.height);
-                            Rect rect = new Rect(left,top,right,bottom);
-                            Log.d("imageSourceRect,face",rect.toString());
-                            image.setRect(imageSourceRect, rect);
+                            FaceBean facebean = gson.fromJson(response,FaceBean.class);
+                            //处理数据
+                            detectionFace(facebean);
                         }catch (Exception e){
                             e.printStackTrace();
                         }
@@ -201,11 +201,19 @@ public class MainActivity extends BaseActivity {
                 });
                 break;
 
-            case ACTION_KEY_POINT:
+            case ACTION_KEY_POINT://关键点检测
                 DetectKeyPoint.getInstance().detect(MainActivity.this, bitmap, new ResponseListener() {
                     @Override
                     public void success(String response) {
                         info.setText(response);
+                        Gson gson = new Gson();
+                        try{
+                            KeyPointBean keyPointBean = gson.fromJson(response,KeyPointBean.class);
+                            //处理数据
+                            detectionFace(keyPointBean);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
                     }
 
                     @Override
@@ -220,11 +228,13 @@ public class MainActivity extends BaseActivity {
 
     void detect(Uri imageUri){
         switch (action){
-            case ACTION_DETECT_AGE:
+            case ACTION_DETECT_AGE://年龄检测
                 DetectAge.getInstance().detect(MainActivity.this, imageUri, new ResponseListener() {
                     @Override
                     public void success(String response) {
-                        info.setText(response);
+                        System.out.print("======================年龄检测返回值=======================>"+response);
+                        //处理数据
+                        detectionFace(response,"age");
                     }
 
                     @Override
@@ -232,13 +242,17 @@ public class MainActivity extends BaseActivity {
                         info.setText("上传超时");
                     }
                 });
+
+
                 break;
 
-            case ACTION_DETECT_GENDER:
+            case ACTION_DETECT_GENDER://性别检测
                 DetectGender.getInstance().detect(MainActivity.this, imageUri, new ResponseListener() {
                     @Override
                     public void success(String response) {
-                        info.setText(response);
+                        System.out.print("======================性别检测返回值=======================>"+response);
+                        //处理数据
+                        detectionFace(response,"gender");
                     }
 
                     @Override
@@ -248,7 +262,7 @@ public class MainActivity extends BaseActivity {
                 });
                 break;
 
-            case ACTION_DETECT_IMAGE_POR:
+            case ACTION_DETECT_IMAGE_POR://人脸检测
                 DetectImgProperties.getInstance().detect(MainActivity.this, imageUri, new ResponseListener() {
                     @Override
                     public void success(String response) {
@@ -256,15 +270,9 @@ public class MainActivity extends BaseActivity {
                         response = Util.string2jsonString(response);
                         Gson gson = new Gson();
                         try{
-                            ResponseImagePro responseImagePro = gson.fromJson(response,ResponseImagePro.class);
-                            Rectangle rectangle = responseImagePro.attribute;
-                            int left = Integer.parseInt(rectangle.X);
-                            int top = Integer.parseInt(rectangle.Y);
-                            int right = left + Integer.parseInt(rectangle.width);
-                            int bottom = top + Integer.parseInt(rectangle.height);
-                            Rect rect = new Rect(left,top,right,bottom);
-                            Log.d("imageSourceRect,face",rect.toString());
-                            image.setRect(imageSourceRect, rect);
+                            FaceBean facebean = gson.fromJson(response,FaceBean.class);
+                            //处理数据
+                            detectionFace(facebean);
                         }catch (Exception e){
                             e.printStackTrace();
                         }
@@ -278,11 +286,21 @@ public class MainActivity extends BaseActivity {
                 });
                 break;
 
-            case ACTION_KEY_POINT:
+            case ACTION_KEY_POINT://关键点检测
                 DetectKeyPoint.getInstance().detect(MainActivity.this, imageUri, new ResponseListener() {
                     @Override
                     public void success(String response) {
                         info.setText(response);
+                        response = Util.string2jsonString(response);
+                        Gson gson = new Gson();
+                        try{
+                            KeyPointBean keyPointBean = gson.fromJson(response,KeyPointBean.class);
+                            //处理数据
+                            detectionFace(keyPointBean);
+                        }catch (Exception e){
+                            e.printStackTrace();
+
+                        }
                     }
 
                     @Override
@@ -296,15 +314,70 @@ public class MainActivity extends BaseActivity {
 
     }
 
-    class Rectangle{
-        public String X;
-        public String Y;
-        public String width;
-        public String height;
+
+
+
+    //关键点检测
+    private void detectionFace(KeyPointBean keypointBean) {
+        //info.setText("检测成功");
+        if ( !keypointBean.getStatus().equals("OK")){
+            info.setText("图片中未检测到人脸");
+            return;
+        }
+        List<KeyPointBean.FacesBean> faces = keypointBean.getFaces();
+        if ( faces.size()<0){
+            return;
+        }
+        for (KeyPointBean.FacesBean face : faces) {
+            int left = Integer.parseInt(face.getX());
+            int top = Integer.parseInt(face.getY());
+            int right = left + Integer.parseInt(face.getWidth());
+            int bottom = top + Integer.parseInt(face.getHeight());
+            Rect rect = new Rect(left,top,right,bottom);
+            image.setRect(imageSourceRect, rect);
+            image.setPoints(face.getPoints());
+        }
+
+    }
+    //人脸检测
+    private void detectionFace(FaceBean facebean) {
+       // info.setText("检测成功");
+        FaceBean.AttributeBean rectangle = facebean.getAttribute();
+        if(TextUtils.isEmpty(rectangle.getX()) || TextUtils.isEmpty(rectangle.getY())
+                || TextUtils.isEmpty(rectangle.getWidth()) || TextUtils.isEmpty(rectangle.getHeight())
+                || (!facebean.getStatus().equals("OK"))){
+            info.setText("图片中未检测到人脸");
+            return;
+        }
+        int left = Integer.parseInt(rectangle.getX());
+        int top = Integer.parseInt(rectangle.getY());
+        int right = left + Integer.parseInt(rectangle.getWidth());
+        int bottom = top + Integer.parseInt(rectangle.getHeight());
+        Rect rect = new Rect(left,top,right,bottom);
+        Log.d("imageSourceRect,face",rect.toString());
+        image.setRect(imageSourceRect, rect);
     }
 
-    class ResponseImagePro{
-        public String status;
-        public Rectangle attribute;
+    private void detectionFace(String data,String jsonKey) {
+        String response = Util.string2jsonString(data);
+        //解析json数据并显示
+        try {
+            JSONObject jo = new JSONObject(response);
+            String status= jo.getString("status");
+            if (status.equals("OK")){
+                String result= jo.getString(jsonKey);
+                info.setText(result);
+            }else {
+                info.setText("检测失败");
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+            info.setText("检测失败");
+        }
+
     }
+
+
+
 }
