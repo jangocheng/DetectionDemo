@@ -31,7 +31,7 @@ import java.util.List;
 public class GroupManageActivity extends BaseActivity {
     private final String TAG = "GroupManageActivity";
 
-    ProgressBar progressBar;
+
     GroupRecViewAdapter adapter;
     TextView name,tag;
     @Override
@@ -41,11 +41,12 @@ public class GroupManageActivity extends BaseActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         initView();
+        showDialog(this,"");
         fetchGroup();
     }
 
     void initView(){
-        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
+
         name = (TextView) findViewById(R.id.add_group_name);
         tag = (TextView) findViewById(R.id.add_group_tag);
         findViewById(R.id.create_group).setOnClickListener(new View.OnClickListener() {
@@ -78,34 +79,44 @@ public class GroupManageActivity extends BaseActivity {
                     public void getImage(Uri imageUri, Bitmap bitmap) {
                         Group g = adapter.groupList.get(position);
                         if (imageUri != null){
+                            showDialog(GroupManageActivity.this,getResources().getString(R.string.recognize_face_ing));
                             APIManager.getInstance().recognizeImageGroup(GroupManageActivity.this,
                                     imageUri,
                                     g.group_id,
                                     new ResponseListener() {
                                         @Override
                                         public void success(String response) {
+                                            dismissDialog();
                                             handRecognitionResponse(response);
                                         }
 
                                         @Override
                                         public void failed() {
-
+                                            dismissDialog();
+                                            Toast.makeText(GroupManageActivity.this,
+                                                    getResources().getString(R.string.network_fail),
+                                                    Toast.LENGTH_SHORT).show();
                                         }
                                     });
 
                         }else if (bitmap != null){
+                            showDialog(GroupManageActivity.this,getResources().getString(R.string.recognize_face_ing));
                             APIManager.getInstance().recognizeImageGroup(GroupManageActivity.this,
                                     bitmap,
                                     g.group_id,
                                     new ResponseListener() {
                                         @Override
                                         public void success(String response) {
+                                            dismissDialog();
                                             handRecognitionResponse(response);
                                         }
 
                                         @Override
                                         public void failed() {
-
+                                            dismissDialog();
+                                            Toast.makeText(GroupManageActivity.this,
+                                                    getResources().getString(R.string.network_fail),
+                                                    Toast.LENGTH_SHORT).show();
                                         }
                                     });
                         }else {
@@ -142,7 +153,7 @@ public class GroupManageActivity extends BaseActivity {
                     @Override
                     public void failed() {
                         Toast.makeText(GroupManageActivity.this,
-                                "添加失败",
+                                getResources().getString(R.string.network_fail),
                                 Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -166,31 +177,34 @@ public class GroupManageActivity extends BaseActivity {
                     e.printStackTrace();
                 }
 
-                progressBar.setVisibility(View.GONE);
+                dismissDialog();
 
             }
 
             @Override
             public void failed() {
                 Toast.makeText(GroupManageActivity.this,
-                        "获取人群失败",
+                        getResources().getString(R.string.network_fail),
                         Toast.LENGTH_SHORT).show();
-                progressBar.setVisibility(View.GONE);
+                dismissDialog();
             }
         });
     }
 
     void deleteGroup(String id){
+        showDialog(this,"");
         APIManager.getInstance().deleteGroup(this, id, new ResponseListener() {
             @Override
             public void success(String response) {
+                dismissDialog();
                 fetchGroup();
             }
 
             @Override
             public void failed() {
+                dismissDialog();
                 Toast.makeText(GroupManageActivity.this,
-                        "删除失败",
+                        getResources().getString(R.string.network_fail),
                         Toast.LENGTH_SHORT).show();
             }
         });

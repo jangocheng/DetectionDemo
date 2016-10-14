@@ -37,13 +37,14 @@ import java.util.List;
 public class FaceSetManageActivity extends BaseActivity {
     private final String TAG = "FaceSetManageActivity";
 
-    ProgressBar progressBar;
+   // ProgressBar progressBar;
     FaceSetRecViewAdapter adapter;
     TextView name,tag;
     String group_id = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        showDialog(this, "");
         setContentView(R.layout.activity_faceset_manage);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -52,7 +53,6 @@ public class FaceSetManageActivity extends BaseActivity {
     }
 
     void initView(){
-        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         name = (TextView) findViewById(R.id.add_faceset_name);
         tag = (TextView) findViewById(R.id.add_faceset_tag);
         findViewById(R.id.create_faceset).setOnClickListener(new View.OnClickListener() {
@@ -99,21 +99,21 @@ public class FaceSetManageActivity extends BaseActivity {
             Toast.makeText(this,"name不能为空",Toast.LENGTH_SHORT).show();
             return;
         }
-        progressBar.setVisibility(View.VISIBLE);
+        showDialog(this, "");
         APIManager.getInstance().createFaceSet(this,
                 nameString,
                 tagString,
                 new ResponseListener() {
                     @Override
                     public void success(String response) {
-                        progressBar.setVisibility(View.GONE);
+                        dismissDialog();
                         fetchFaceSet();
 
                     }
 
                     @Override
                     public void failed() {
-                        progressBar.setVisibility(View.GONE);
+                        dismissDialog();
                         Toast.makeText(FaceSetManageActivity.this,
                                 "添加失败",
                                 Toast.LENGTH_SHORT).show();
@@ -122,6 +122,7 @@ public class FaceSetManageActivity extends BaseActivity {
     }
 
     void fetchFaceSet(){
+
         APIManager.getInstance().fetchFaceSet(this, new ResponseListener() {
             @Override
             public void success(String response) {
@@ -141,8 +142,7 @@ public class FaceSetManageActivity extends BaseActivity {
                 }catch (Exception e){
                     e.printStackTrace();
                 }
-
-                progressBar.setVisibility(View.GONE);
+                dismissDialog();
 
             }
 
@@ -151,7 +151,7 @@ public class FaceSetManageActivity extends BaseActivity {
                 Toast.makeText(FaceSetManageActivity.this,
                         "获取人脸集失败",
                         Toast.LENGTH_SHORT).show();
-                progressBar.setVisibility(View.GONE);
+                dismissDialog();
             }
         });
     }

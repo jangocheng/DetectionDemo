@@ -1,5 +1,6 @@
 package com.compilesense.liuyi.detectiondemo.activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -7,7 +8,9 @@ import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.compilesense.liuyi.detectiondemo.R;
 import com.compilesense.liuyi.detectiondemo.utils.Util;
+import com.compilesense.liuyi.detectiondemo.view.XDialog;
 
 /**
  * 因为较多的activity都会有图片获取的操作,这里封装一下
@@ -100,6 +103,33 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     public interface GetImageListener{
         void getImage(Uri imageUri, Bitmap bitmap);
+    }
+
+    /**
+     * 显示dialog
+     *
+     * @param mContext
+     *            上下文
+     * @param msg
+     *            提示语
+     */
+    protected XDialog loadingDialog;
+
+    public void showDialog(Context mContext, String msg) {
+        if (null != loadingDialog) {
+            loadingDialog.dismiss();
+        }
+        loadingDialog = new XDialog(mContext, R.style.Dialog_image, msg);
+        loadingDialog.show();
+    }
+
+    /**
+     * 让dialog消失
+     */
+    public void dismissDialog() {
+        if (null != loadingDialog) {
+            loadingDialog.dismiss();
+        }
     }
 
 }

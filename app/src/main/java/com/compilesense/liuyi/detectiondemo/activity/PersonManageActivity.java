@@ -39,7 +39,6 @@ public class PersonManageActivity extends BaseActivity {
     PersonListAdapter adapter;
     TextView name;
     TextView tag;
-    ProgressBar progressBar ;
     String group_id = null;
     String group_name = null;
 
@@ -55,7 +54,7 @@ public class PersonManageActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_person_manage);
-
+        showDialog(this,"");
         parseIntent();
         initView();
         fetchPerson();
@@ -76,7 +75,6 @@ public class PersonManageActivity extends BaseActivity {
 
     private void initView(){
         initToolbar();
-        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         initRecycleView();
         //添加人员
         Button addPerson = (Button) findViewById(R.id.add_person);
@@ -88,9 +86,9 @@ public class PersonManageActivity extends BaseActivity {
                     return;
                 }
 
-
+                showDialog(PersonManageActivity.this,"");
                 addPerson();
-                progressBar.setVisibility(View.VISIBLE);
+
             }
         });
         name = (TextView) findViewById(R.id.add_person_name);
@@ -102,20 +100,21 @@ public class PersonManageActivity extends BaseActivity {
         adapter.setItemClickListener(new OnItemClickListener() {
             @Override
             public void onDeletePerson(int position) {
-                progressBar.setVisibility(View.VISIBLE);
+                showDialog(PersonManageActivity.this,"");
                 APIManager.getInstance().deletePerson(PersonManageActivity.this,
                         group_id,
                         adapter.personList.get(position).person_id,
                         new ResponseListener() {
                             @Override
                             public void success(String response) {
+                                dismissDialog();
                                 fetchPerson();
                             }
 
                             @Override
                             public void failed() {
-                                Toast.makeText(PersonManageActivity.this,
-                                        "删除失败",
+                                dismissDialog();
+                                Toast.makeText(PersonManageActivity.this,getResources().getString(R.string.network_fail),
                                         Toast.LENGTH_SHORT).show();
                             }
                         });
@@ -135,34 +134,40 @@ public class PersonManageActivity extends BaseActivity {
                     public void getImage(Uri imageUri, Bitmap bitmap) {
                         Person p = adapter.personList.get(position);
                         if (imageUri != null){
+                            showDialog(PersonManageActivity.this,getResources().getString(R.string.recognize_face_ing));
                             APIManager.getInstance().recognizeImagePerson(PersonManageActivity.this,
                                     imageUri,
                                     p.person_id,
                                     new ResponseListener() {
                                         @Override
                                         public void success(String response) {
+                                            dismissDialog();
                                             handRecognitionResponse(response);
                                         }
 
                                         @Override
                                         public void failed() {
-
+                                         dismissDialog();
+                                            Toast.makeText(PersonManageActivity.this,getResources().getString(R.string.network_fail),
+                                                    Toast.LENGTH_SHORT).show();
                                         }
                                     });
 
                         }else if (bitmap != null){
+                            showDialog(PersonManageActivity.this,getResources().getString(R.string.recognize_face_ing));
                             APIManager.getInstance().recognizeImagePerson(PersonManageActivity.this,
                                     bitmap,
                                     p.person_id,
                                     new ResponseListener() {
                                         @Override
                                         public void success(String response) {
+                                            dismissDialog();
                                             handRecognitionResponse(response);
                                         }
 
                                         @Override
                                         public void failed() {
-
+                                            dismissDialog();
                                         }
                                     });
                         }else {
@@ -208,13 +213,14 @@ public class PersonManageActivity extends BaseActivity {
                 tagString, new ResponseListener() {
                     @Override
                     public void success(String response) {
+                        dismissDialog();
                         fetchPerson();
                     }
 
                     @Override
                     public void failed() {
-                        Toast.makeText(PersonManageActivity.this,
-                                "添加失败",
+                        dismissDialog();
+                        Toast.makeText(PersonManageActivity.this,getResources().getString(R.string.network_fail),
                                 Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -226,7 +232,7 @@ public class PersonManageActivity extends BaseActivity {
             @Override
             public void success(String response) {
 
-                progressBar.setVisibility(View.GONE);
+                dismissDialog();
                 Gson gson = new Gson();
                 try {
                     response = Util.string2jsonString(response);
@@ -243,10 +249,9 @@ public class PersonManageActivity extends BaseActivity {
 
             @Override
             public void failed() {
-                Toast.makeText(PersonManageActivity.this,
-                        "获取人员失败",
+                Toast.makeText(PersonManageActivity.this,getResources().getString(R.string.network_fail),
                         Toast.LENGTH_SHORT).show();
-                progressBar.setVisibility(View.GONE);
+               dismissDialog();
             }
         });
     }

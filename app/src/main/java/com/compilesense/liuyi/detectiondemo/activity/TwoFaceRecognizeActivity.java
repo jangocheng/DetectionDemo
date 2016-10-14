@@ -90,10 +90,11 @@ public class TwoFaceRecognizeActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
 
+
                 ResponseListener listener = new ResponseListener() {
                     @Override
                     public void success(String response) {
-
+                        dismissDialog();
                         if (face1Bitmap != null){
                             face1Bitmap.recycle();
                         }
@@ -114,11 +115,15 @@ public class TwoFaceRecognizeActivity extends BaseActivity {
 
                     @Override
                     public void failed() {
-
+                             dismissDialog();
+                        Toast.makeText(TwoFaceRecognizeActivity.this,
+                                getResources().getString(R.string.network_fail),
+                                Toast.LENGTH_SHORT).show();
                     }
                 };
 
                 if (face1ImageUri != null && face2ImageUri != null){
+                    showDialog(TwoFaceRecognizeActivity.this,getResources().getString(R.string.recognize_face_ing));
                     new RecognizeTwoFace().recognize(
                             TwoFaceRecognizeActivity.this,
                             face1ImageUri,
@@ -126,6 +131,7 @@ public class TwoFaceRecognizeActivity extends BaseActivity {
                             listener
                     );
                 }else if (face1Bitmap != null && face2ImageUri != null){
+                    showDialog(TwoFaceRecognizeActivity.this,getResources().getString(R.string.recognize_face_ing));
                     new RecognizeTwoFace().recognize(
                             TwoFaceRecognizeActivity.this,
                             face1Bitmap,
@@ -133,6 +139,7 @@ public class TwoFaceRecognizeActivity extends BaseActivity {
                             listener
                     );
                 }else if (face1ImageUri != null && face2Bitmap != null){
+                    showDialog(TwoFaceRecognizeActivity.this,getResources().getString(R.string.recognize_face_ing));
                     new RecognizeTwoFace().recognize(
                             TwoFaceRecognizeActivity.this,
                             face1ImageUri,
@@ -140,6 +147,7 @@ public class TwoFaceRecognizeActivity extends BaseActivity {
                             listener
                     );
                 }else if (face1Bitmap != null && face2Bitmap != null){
+                    showDialog(TwoFaceRecognizeActivity.this,getResources().getString(R.string.recognize_face_ing));
                     new RecognizeTwoFace().recognize(
                             TwoFaceRecognizeActivity.this,
                             face1Bitmap,

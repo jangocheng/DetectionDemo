@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import com.compilesense.liuyi.detectiondemo.R;
 import com.compilesense.liuyi.detectiondemo.model.Group;
+import com.compilesense.liuyi.detectiondemo.platform_interaction.RecognitionResponse;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.APIManager;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.Train;
 import com.compilesense.liuyi.detectiondemo.utils.SpaceItemDecoration;
@@ -70,6 +71,7 @@ public class FaceManageActivity extends BaseActivity {
         setContentView(R.layout.activity_face_manage);
         parseIntent();
         initView();
+        showDialog(FaceManageActivity.this,"");
         fetchFace();
     }
 
@@ -114,6 +116,7 @@ public class FaceManageActivity extends BaseActivity {
             @Override
             public void getImage(Uri imageUri, Bitmap bitmap) {
                 if (imageUri != null){
+                    showDialog(FaceManageActivity.this,"");
                     APIManager.getInstance().addFace(FaceManageActivity.this,
                             imageUri,
                             group_id,
@@ -122,17 +125,20 @@ public class FaceManageActivity extends BaseActivity {
                             new ResponseListener() {
                                 @Override
                                 public void success(String response) {
+                                    dismissDialog();
                                     fetchFace();
                                 }
 
                                 @Override
                                 public void failed() {
+                                    dismissDialog();
                                     Toast.makeText(FaceManageActivity.this,
-                                            "添加失败",
+                                            getResources().getString(R.string.network_fail),
                                             Toast.LENGTH_SHORT).show();
                                 }
                             });
                 }else if (bitmap != null){
+                    showDialog(FaceManageActivity.this,"");
                     APIManager.getInstance().addFace(FaceManageActivity.this,
                             bitmap,
                             group_id,
@@ -141,12 +147,14 @@ public class FaceManageActivity extends BaseActivity {
                             new ResponseListener() {
                                 @Override
                                 public void success(String response) {
+                                    dismissDialog();
                                     fetchFace();
                                 }
                                 @Override
                                 public void failed() {
+                                    dismissDialog();
                                     Toast.makeText(FaceManageActivity.this,
-                                            "添加失败",
+                                            getResources().getString(R.string.network_fail),
                                             Toast.LENGTH_SHORT).show();
                                 }
                             });
@@ -165,6 +173,7 @@ public class FaceManageActivity extends BaseActivity {
         APIManager.getInstance().fetchFace(this, person_id, new ResponseListener() {
             @Override
             public void success(String response) {
+                dismissDialog();
                 Gson gson = new Gson();
                 try{
                     response = Util.string2jsonString(response);
@@ -182,8 +191,9 @@ public class FaceManageActivity extends BaseActivity {
 
             @Override
             public void failed() {
+                dismissDialog();
                 Toast.makeText(FaceManageActivity.this,
-                        "获取人脸失败",
+                        getResources().getString(R.string.network_fail),
                         Toast.LENGTH_SHORT).show();
 
             }
@@ -195,6 +205,7 @@ public class FaceManageActivity extends BaseActivity {
         adapter.listener = new FaceViewButtonClickListener() {
             @Override
             public void onDeleteFace(int position) {
+                showDialog(FaceManageActivity.this,"");
                 APIManager.getInstance().deleteFace(FaceManageActivity.this,
                         group_id,
                         person_id,
@@ -203,24 +214,41 @@ public class FaceManageActivity extends BaseActivity {
                         new ResponseListener() {
                             @Override
                             public void success(String response) {
+                                dismissDialog();
+
                                 fetchFace();
                             }
 
                             @Override
                             public void failed() {
+                                dismissDialog();
                                 Toast.makeText(FaceManageActivity.this,
-                                        "删除失败",
+                                        getResources().getString(R.string.network_fail),
                                         Toast.LENGTH_SHORT).show();
                             }
                         });
             }
 
             @Override
-            public void onRecognizeWithPerson(final int position) {
+            public void onRecognizeWithPerson(final int position) {recognizeWithPerson(position);}
 
-                APIManager.getInstance().fetchPerson(FaceManageActivity.this, group_id, new ResponseListener() {
+            @Override
+            public void onRecognizeWithGroup(int position) {
+                recognizeWithGroup(position);
+            }
+        };
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv_face_list);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.addItemDecoration(new SpaceItemDecoration(16));
+        recyclerView.setAdapter(adapter);
+    }
+
+    private void recognizeWithPerson(final int position) {
+
+         APIManager.getInstance().fetchPerson(FaceManageActivity.this, group_id, new ResponseListener() {
                     @Override
                     public void success(String response) {
+
                         response = Util.string2jsonString(response);
 
                         Gson gson = new Gson();
@@ -233,7 +261,8 @@ public class FaceManageActivity extends BaseActivity {
                             @Override
                             public void onClick(int which) {
                                 String person_id = r.person.get(which).person_id;
-
+                                Log.d(TAG,"person_id="+person_id+"-----face_id="+ adapter.faceList.get(position).face_id);
+                                showDialog(FaceManageActivity.this,getResources().getString(R.string.recognize_face_ing));
                                 APIManager.getInstance()
                                         .recognizeFacePerson(FaceManageActivity.this,
                                                 person_id,
@@ -241,15 +270,17 @@ public class FaceManageActivity extends BaseActivity {
                                                 new ResponseListener() {
                                                     @Override
                                                     public void success(String response) {
-
+                                                        dismissDialog();
                                                         response = Util.string2jsonString(response);
+                                                        Log.d(TAG,response);
                                                         Gson gson1 = new Gson();
                                                         try {
-                                                            ResponseRecognition responseRecognition = gson1.fromJson(response,ResponseRecognition.class);
-                                                            if (responseRecognition.status.equals("OK")){
-                                                                Toast.makeText(FaceManageActivity.this,"是同一人",Toast.LENGTH_SHORT).show();
-                                                            }else if (responseRecognition.status.equals("NO")){
-                                                                Toast.makeText(FaceManageActivity.this,"不是同一人",Toast.LENGTH_SHORT).show();
+                                                            RecognitionResponse recognitionResponse = gson1.fromJson(response,RecognitionResponse.class);
+
+                                                            if (recognitionResponse.Persons.get(0).Passed){
+                                                                Toast.makeText(FaceManageActivity.this,"识别通过",Toast.LENGTH_SHORT).show();
+                                                            }else {
+                                                                Toast.makeText(FaceManageActivity.this,"识别未通过",Toast.LENGTH_SHORT).show();
                                                             }
                                                         }catch (Exception e){
                                                             e.printStackTrace();
@@ -260,7 +291,10 @@ public class FaceManageActivity extends BaseActivity {
 
                                                     @Override
                                                     public void failed() {
-
+                                                        dismissDialog();
+                                                        Toast.makeText(FaceManageActivity.this,
+                                                                getResources().getString(R.string.network_fail),
+                                                                Toast.LENGTH_SHORT).show();
                                                     }
                                                 });
                             }
@@ -269,23 +303,13 @@ public class FaceManageActivity extends BaseActivity {
 
                     @Override
                     public void failed() {
-
+                        Toast.makeText(FaceManageActivity.this,
+                                getResources().getString(R.string.network_fail),
+                                Toast.LENGTH_SHORT).show();
                     }
                 });
-
-
-            }
-
-            @Override
-            public void onRecognizeWithGroup(int position) {
-                recognizeWithGroup(position);
-            }
-        };
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv_face_list);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.addItemDecoration(new SpaceItemDecoration(16));
-        recyclerView.setAdapter(adapter);
     }
+
 
     private void recognizeWithGroup(final int position){
         APIManager.getInstance().fetchGroup(FaceManageActivity.this, new ResponseListener() {
@@ -306,18 +330,38 @@ public class FaceManageActivity extends BaseActivity {
                             new Util.DialogOnClickListener() {
                                 @Override
                                 public void onClick(int which) {
+                                    Log.d(TAG,"group_id="+groups.get(which).group_id+"-----face_id="+ adapter.faceList.get(position).face_id);
+                                    showDialog(FaceManageActivity.this,getResources().getString(R.string.recognize_face_ing));
                                     APIManager.getInstance().recognizeFaceGroup(FaceManageActivity.this,
                                             groups.get(which).group_id,
                                             adapter.faceList.get(position).face_id,
                                             new ResponseListener() {
                                                 @Override
                                                 public void success(String response) {
+                                                    dismissDialog();
+                                                    response = Util.string2jsonString(response);
                                                     Log.d(TAG,response);
+                                                    Gson gson1 = new Gson();
+                                                    try {
+                                                        RecognitionResponse recognitionResponse = gson1.fromJson(response,RecognitionResponse.class);
+
+                                                        if (recognitionResponse.Persons.get(0).Passed){
+                                                            Toast.makeText(FaceManageActivity.this,"识别通过",Toast.LENGTH_SHORT).show();
+                                                        }else {
+                                                            Toast.makeText(FaceManageActivity.this,"识别未通过",Toast.LENGTH_SHORT).show();
+                                                        }
+                                                    }catch (Exception e){
+                                                        e.printStackTrace();
+                                                        Toast.makeText(FaceManageActivity.this,response,Toast.LENGTH_SHORT).show();
+                                                    }
                                                 }
 
                                                 @Override
                                                 public void failed() {
-
+                                                    dismissDialog();
+                                                    Toast.makeText(FaceManageActivity.this,
+                                                            getResources().getString(R.string.network_fail),
+                                                            Toast.LENGTH_SHORT).show();
                                                 }
                                             }
                                     );
@@ -332,7 +376,9 @@ public class FaceManageActivity extends BaseActivity {
 
             @Override
             public void failed() {
-
+                Toast.makeText(FaceManageActivity.this,
+                        getResources().getString(R.string.network_fail),
+                        Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -342,10 +388,7 @@ public class FaceManageActivity extends BaseActivity {
         public List<Group> group;
     }
 
-    class ResponseRecognition{
-        public String status;
-        public String person_id;
-    }
+
 
     class ResponseFaceFetch{
         public String status;
@@ -408,19 +451,24 @@ public class FaceManageActivity extends BaseActivity {
                 }
             });
 
-//            holder.recognizeWithPerson.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    listener.onRecognizeWithPerson(p);
-//                }
-//            });
-//
-//            holder.recognizeWithGroup.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    listener.onRecognizeWithGroup(p);
-//                }
-//            });
+            if (!TextUtils.isEmpty(faceset_id) ){//由FaceSetManageActivity跳转过来时，使能识别按钮
+                    holder.recognizeWithPerson.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                           listener.onRecognizeWithPerson(p);
+                        }
+                   });
+
+                    holder.recognizeWithGroup.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            listener.onRecognizeWithGroup(p);
+                        }
+                   });
+                return;
+            }
+
+
 
             holder.recognizeWithGroup.setVisibility(View.GONE);
             holder.recognizeWithPerson.setVisibility(View.GONE);
