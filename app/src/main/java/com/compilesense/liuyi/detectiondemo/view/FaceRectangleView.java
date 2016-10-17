@@ -55,13 +55,13 @@ public class FaceRectangleView extends ImageView {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
+        int w = getWidth();
+        int h = getHeight();
+        int l = getLeft();
+        int t = getTop();
 
         if (sourceFaceRect != null){
-            int w = getWidth();
-            int h = getHeight();
-            int l = getLeft();
-            int t = getTop();
+
 
 
             int dRLeft = (sourceFaceRect.left * w / sourceRect.width()) ;
@@ -77,7 +77,9 @@ public class FaceRectangleView extends ImageView {
 
         if (sourceFacePoints!=null && sourceFacePoints.size() >0){
             for (KeyPointBean.FacesBean.PointsBean point : sourceFacePoints) {
-                canvas.drawPoint(Integer.parseInt(point.getX())+0.5f,Integer.parseInt(point.getY())+0.5f,rectPaint);
+                int pX = (w * Integer.parseInt(point.getX()) / sourceRect.width()) ;
+                int pY = (h * Integer.parseInt(point.getY()) / sourceRect.height()) ;
+                canvas.drawPoint(pX+0.5f,pY+0.5f,rectPaint);
             }
 
         }

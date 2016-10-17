@@ -86,6 +86,13 @@ public class FaceManageActivity extends BaseActivity {
             toolbar.setTitle(person_name);
         }
         setSupportActionBar(toolbar);
+        toolbar.setNavigationIcon(R.drawable.back);
+        toolbar.setNavigationOnClickListener(new Toolbar.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
     }
 
     private void parseIntent(){
@@ -244,11 +251,11 @@ public class FaceManageActivity extends BaseActivity {
     }
 
     private void recognizeWithPerson(final int position) {
-
+        showDialog(FaceManageActivity.this,"获取列表中...");
          APIManager.getInstance().fetchPerson(FaceManageActivity.this, group_id, new ResponseListener() {
                     @Override
                     public void success(String response) {
-
+                        dismissDialog();
                         response = Util.string2jsonString(response);
 
                         Gson gson = new Gson();
@@ -258,6 +265,11 @@ public class FaceManageActivity extends BaseActivity {
                         }
 
                         Util.buildChosePersonDialog(FaceManageActivity.this, r.person, new Util.DialogOnClickListener() {
+                            @Override
+                            public void onPosiButtonClick(int which, String text1, String text2) {
+
+                            }
+
                             @Override
                             public void onClick(int which) {
                                 String person_id = r.person.get(which).person_id;
@@ -284,6 +296,7 @@ public class FaceManageActivity extends BaseActivity {
                                                             }
                                                         }catch (Exception e){
                                                             e.printStackTrace();
+                                                            Toast.makeText(FaceManageActivity.this,response,Toast.LENGTH_SHORT).show();
                                                         }
 
 
@@ -303,6 +316,7 @@ public class FaceManageActivity extends BaseActivity {
 
                     @Override
                     public void failed() {
+                        dismissDialog();
                         Toast.makeText(FaceManageActivity.this,
                                 getResources().getString(R.string.network_fail),
                                 Toast.LENGTH_SHORT).show();
@@ -365,6 +379,11 @@ public class FaceManageActivity extends BaseActivity {
                                                 }
                                             }
                                     );
+                                }
+
+                                @Override
+                                public void onPosiButtonClick(int which, String text1, String text2) {
+
                                 }
                             });
 

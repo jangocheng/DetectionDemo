@@ -5,8 +5,11 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -27,9 +30,25 @@ public class RecognitionActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_face_recognition);
         initPreferences();
+        initToolbar();
         initView();
+    }
+
+    private void initToolbar() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.main_toolbar);
+        toolbar.setTitle(getResources().getString(R.string.app_name));//设置主标题
+        toolbar.setTitleTextColor(getResources().getColor(R.color.colorwrite));
+        toolbar.setNavigationIcon(R.drawable.back);
+        toolbar.setNavigationOnClickListener(new Toolbar.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
+
     }
 
     void initPreferences(){
@@ -163,6 +182,11 @@ public class RecognitionActivity extends AppCompatActivity {
 
                             Util.buildChooseGroupDialog(RecognitionActivity.this, groups,
                                     new Util.DialogOnClickListener() {
+                                        @Override
+                                        public void onPosiButtonClick(int which, String text1, String text2) {
+
+                                        }
+
                                         @Override
                                         public void onClick(int which) {
                                             //2.训练当前组人群

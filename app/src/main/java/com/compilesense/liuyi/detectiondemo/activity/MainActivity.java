@@ -1,5 +1,6 @@
 package com.compilesense.liuyi.detectiondemo.activity;
 
+import android.app.ActionBar;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -7,15 +8,24 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.compilesense.liuyi.detectiondemo.model.bean.FaceBean;
 import com.compilesense.liuyi.detectiondemo.model.bean.KeyPointBean;
+import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.Train;
+import com.compilesense.liuyi.detectiondemo.utils.CacheUtils;
+import com.compilesense.liuyi.detectiondemo.utils.Constans;
+import com.compilesense.liuyi.detectiondemo.utils.Util.DialogOnClickListener;
 import com.compilesense.liuyi.detectiondemo.view.FaceRectangleView;
 import com.compilesense.liuyi.detectiondemo.R;
 import com.compilesense.liuyi.detectiondemo.utils.Util;
@@ -44,13 +54,63 @@ public class MainActivity extends BaseActivity {
 
     SharedPreferences sharedPreferences;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
+        initToolbar();
         initFresco();
         initView();
     }
+
+    private void initToolbar() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.main_toolbar);
+        toolbar.inflateMenu(R.menu.base_toolbar_menu);//设置右上角的填充菜单
+        toolbar.setTitle(getResources().getString(R.string.app_name));//设置主标题
+        toolbar.setTitleTextColor(getResources().getColor(R.color.colorwrite));
+        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                int menuItemId = item.getItemId();
+                if (menuItemId == R.id.action_item1) {
+                    Util.buildEditDialog(MainActivity.this,"更改账号","账号","密码",new DialogOnClickListener(){
+
+                        @Override
+                        public void onClick(int which) {}
+
+                        @Override
+                        public void onPosiButtonClick(int which, String text1, String text2) {
+                            // 将账号和密码设置到SP中
+                            //CacheUtils.setString(MainActivity.this,Constans.API_ID,text1);
+                            //  CacheUtils.setString(MainActivity.this,Constans.API_SECRET,text2);
+                        }
+                    });
+                } else if (menuItemId == R.id.action_item2) {
+                    Util.buildEditDialog(MainActivity.this,"更改IP","IP","端口号",new DialogOnClickListener(){
+
+                        @Override
+                        public void onClick(int which) {}
+
+                        @Override
+                        public void onPosiButtonClick(int which, String text1, String text2) {
+                            // 将账号和密码设置到SP中
+                            CacheUtils.setString(MainActivity.this, Constans.API_URL,text1);
+                             CacheUtils.setString(MainActivity.this,Constans.API_PORT,text2);
+                        }
+                    });
+                }
+
+                return true;
+            }
+        });
+
+    }
+
+
+
 
     private void initFresco(){
         Fresco.initialize(this);
@@ -291,6 +351,7 @@ public class MainActivity extends BaseActivity {
                     @Override
                     public void success(String response) {
                         info.setText(response);
+
                         response = Util.string2jsonString(response);
                         Gson gson = new Gson();
                         try{

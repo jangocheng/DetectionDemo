@@ -1,13 +1,16 @@
 package com.compilesense.liuyi.detectiondemo.activity;
 
+import android.app.ActionBar;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -40,10 +43,19 @@ public class GroupManageActivity extends BaseActivity {
         setContentView(R.layout.activity_group_manage);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        toolbar.setNavigationIcon(R.drawable.back);
+        toolbar.setNavigationOnClickListener(new Toolbar.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
         initView();
         showDialog(this,"");
         fetchGroup();
     }
+
+
 
     void initView(){
 
@@ -141,17 +153,23 @@ public class GroupManageActivity extends BaseActivity {
             Toast.makeText(this,"name不能为空",Toast.LENGTH_SHORT).show();
             return;
         }
+        showDialog(this, "");
         APIManager.getInstance().createGroup(this,
                 nameString,
                 tagString,
                 new ResponseListener() {
                     @Override
                     public void success(String response) {
+                        dismissDialog();
+                        name.setText("");
+                        tag.setText("");
+
                         fetchGroup();
                     }
 
                     @Override
                     public void failed() {
+                        dismissDialog();
                         Toast.makeText(GroupManageActivity.this,
                                 getResources().getString(R.string.network_fail),
                                 Toast.LENGTH_SHORT).show();

@@ -1,6 +1,7 @@
 <resources>
 
     <!--api-->
+    <string name="api_url2">%1$s</string>
     <string name="api_url">http://182.139.169.23:8888</string>
     <string name="app_name">DetectionDemo</string>
     <string name="api_id">7B871498-78EA-435E-887C-D2CA750B6E34</string>
@@ -57,6 +58,12 @@
 
     <!--Toast-->
     <string name="network_fail">网络访问出错</string>
-    <string name="recognize_face_ing">正在识别，等稍后...</string>
+    <string name="recognize_face_ing">正在识别...</string>
+
+    <string name="item_01">更改账号</string>
+    <string name="item_02">更改IP</string>
+    <string name="chage_setname">修改集合名称</string>
+    <string name="groupname">组名</string>
+    <string name="setname">名称</string>
 
 </resources>

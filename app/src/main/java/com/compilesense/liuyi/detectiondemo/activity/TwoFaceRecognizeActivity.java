@@ -34,7 +34,13 @@ public class TwoFaceRecognizeActivity extends BaseActivity {
         setContentView(R.layout.activity_two_face_recognize);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        toolbar.setNavigationIcon(R.drawable.back);
+        toolbar.setNavigationOnClickListener(new Toolbar.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
         initView();
     }
 
