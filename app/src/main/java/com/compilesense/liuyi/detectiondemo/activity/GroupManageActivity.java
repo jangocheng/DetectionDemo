@@ -78,6 +78,7 @@ public class GroupManageActivity extends BaseActivity {
                 deleteGroup(adapter.groupList.get(position).group_id);
             }
 
+
             @Override
             public void onManagePerson(int position) {
                 Group group = adapter.groupList.get(position);
