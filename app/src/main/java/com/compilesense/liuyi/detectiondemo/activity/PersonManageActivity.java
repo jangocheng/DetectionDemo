@@ -71,6 +71,13 @@ public class PersonManageActivity extends BaseActivity {
             toolbar.setTitle(group_name);
         }
         setSupportActionBar(toolbar);
+        toolbar.setNavigationIcon(R.drawable.back);
+        toolbar.setNavigationOnClickListener(new Toolbar.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
     }
 
     private void initView(){
@@ -213,6 +220,8 @@ public class PersonManageActivity extends BaseActivity {
                 tagString, new ResponseListener() {
                     @Override
                     public void success(String response) {
+                        name.setText("");
+                        tag.setText("");
                         dismissDialog();
                         fetchPerson();
                     }

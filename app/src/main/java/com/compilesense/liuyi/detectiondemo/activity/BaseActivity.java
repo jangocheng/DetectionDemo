@@ -4,9 +4,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Window;
 
 import com.compilesense.liuyi.detectiondemo.R;
 import com.compilesense.liuyi.detectiondemo.utils.Util;
@@ -58,6 +60,12 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+    }
+
     /**
      *
      *
@@ -85,6 +93,11 @@ public abstract class BaseActivity extends AppCompatActivity {
                 }else if (which == 1){
                     getPicFromCamera();
                 }
+            }
+
+            @Override
+            public void onPosiButtonClick(int which, String text1, String text2) {
+
             }
         });
     }

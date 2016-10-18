@@ -37,7 +37,7 @@
             style="@style/MyButton.b2" />
         <Button
             android:id="@+id/item_recognize_group"
-            android:text="@string/recognize_group"
+            android:text="@string/chage_setname"
             style="@style/MyButton.b2" />
         <Button
             android:id="@+id/item_manage_faceset"

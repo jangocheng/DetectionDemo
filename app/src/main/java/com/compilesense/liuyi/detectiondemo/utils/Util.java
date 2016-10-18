@@ -7,6 +7,11 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.v7.app.AlertDialog;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.compilesense.liuyi.detectiondemo.R;
 import com.compilesense.liuyi.detectiondemo.model.Group;
@@ -23,8 +28,10 @@ import java.util.List;
  * Created by shenjingyuan002 on 16/9/5.
  */
 public class Util {
+
     public interface DialogOnClickListener{
         void onClick(int which);
+        void onPosiButtonClick(int which,String text1,String text2);
     }
     public static void buildImgGetDialog(Context context, final DialogOnClickListener listener){
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -84,6 +91,34 @@ public class Util {
                 })
                 .create().show();
     }
+    //更改账号对话框
+    public static void buildEditDialog(final Context context,String title,String str1,String str2,final DialogOnClickListener listener){
+
+        AlertDialog.Builder customizeDialog =
+                new AlertDialog.Builder(context);
+        final View dialogView = LayoutInflater.from(context)
+                .inflate(R.layout.dialog_chage_acount,null);
+        final EditText text1 = (EditText) dialogView.findViewById(R.id.edit_text1);
+        final EditText text2 = (EditText) dialogView.findViewById(R.id.edit_text2);
+        TextView textView1 = (TextView) dialogView.findViewById(R.id.text_view1);
+        TextView textView2 = (TextView) dialogView.findViewById(R.id.text_view2);
+        textView1.setText(str1);
+        textView2.setText(str2);
+        customizeDialog.setTitle("更改账号");
+        customizeDialog.setTitle(title);
+        customizeDialog.setView(dialogView);
+        customizeDialog.setPositiveButton("确定",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        listener.onPosiButtonClick(which,text1.getText().toString(),text2.getText().toString());
+                    }
+                });
+        customizeDialog.show();
+
+    }
+
+
 
 
 

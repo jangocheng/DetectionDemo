@@ -48,6 +48,13 @@ public class FaceSetManageActivity extends BaseActivity {
         setContentView(R.layout.activity_faceset_manage);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        toolbar.setNavigationIcon(R.drawable.back);
+        toolbar.setNavigationOnClickListener(new Toolbar.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
         initView();
         fetchFaceSet();
     }
@@ -58,6 +65,7 @@ public class FaceSetManageActivity extends BaseActivity {
         findViewById(R.id.create_faceset).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 createFaceSet();
             }
         });
@@ -82,7 +90,39 @@ public class FaceSetManageActivity extends BaseActivity {
             }
 
             @Override
-            public void onRecognizeGroup(final int position) {
+            public void onChageSetName(final int position) {
+                final FaceSet faceSet = adapter.faceSetList.get(position);
+
+                Util.buildEditDialog(FaceSetManageActivity.this,"修改名称","名称","标签",new Util.DialogOnClickListener(){
+
+                    @Override
+                    public void onClick(int which) {}
+
+                    @Override
+                    public void onPosiButtonClick(int which, String text1, String text2) {
+                        showDialog(FaceSetManageActivity.this, "");
+
+                        APIManager.getInstance().updateFaceSet(FaceSetManageActivity.this,faceSet.faceset_id  , text1, text2, new ResponseListener() {
+                            @Override
+                            public void success(String response) {
+                                dismissDialog();
+                                Log.d(TAG,"updateFaceSet:"+response);
+                                fetchFaceSet();
+                            }
+
+                            @Override
+                            public void failed() {
+                                dismissDialog();
+                                Toast.makeText(FaceSetManageActivity.this,
+                                        getResources().getString(R.string.network_fail),
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                });
+
+
+
 
             }
         };
@@ -107,6 +147,8 @@ public class FaceSetManageActivity extends BaseActivity {
                     @Override
                     public void success(String response) {
                         dismissDialog();
+                        name.setText("");
+                        tag.setText("");
                         fetchFaceSet();
 
                     }
@@ -115,7 +157,7 @@ public class FaceSetManageActivity extends BaseActivity {
                     public void failed() {
                         dismissDialog();
                         Toast.makeText(FaceSetManageActivity.this,
-                                "添加失败",
+                                getResources().getString(R.string.network_fail),
                                 Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -149,7 +191,7 @@ public class FaceSetManageActivity extends BaseActivity {
             @Override
             public void failed() {
                 Toast.makeText(FaceSetManageActivity.this,
-                        "获取人脸集失败",
+                        getResources().getString(R.string.network_fail),
                         Toast.LENGTH_SHORT).show();
                 dismissDialog();
             }
@@ -166,7 +208,7 @@ public class FaceSetManageActivity extends BaseActivity {
             @Override
             public void failed() {
                 Toast.makeText(FaceSetManageActivity.this,
-                        "删除失败",
+                        getResources().getString(R.string.network_fail),
                         Toast.LENGTH_SHORT).show();
             }
         });
@@ -208,7 +250,7 @@ public class FaceSetManageActivity extends BaseActivity {
     interface ItemClickListener{
         void onDeleteFaceSet(int position);
         void onManageFaceSet(int position);
-        void onRecognizeGroup(int position);
+        void onChageSetName(int position);
     }
 
     class FaceSetViewHolder extends RecyclerView.ViewHolder{
@@ -278,7 +320,7 @@ public class FaceSetManageActivity extends BaseActivity {
             holder.recognizeGroup.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    listener.onRecognizeGroup(holder.getAdapterPosition());
+                    listener.onChageSetName(holder.getAdapterPosition());
                 }
             });
         }
