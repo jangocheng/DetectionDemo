@@ -2,11 +2,14 @@ package com.compilesense.liuyi.detectiondemo.platform_interaction.apis;
 
 import android.content.Context;
 import android.content.pm.LabeledIntent;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.compilesense.liuyi.detectiondemo.R;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.FetchData;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.ResponseListener;
+import com.compilesense.liuyi.detectiondemo.utils.CacheUtils;
+import com.compilesense.liuyi.detectiondemo.utils.Constans;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +38,11 @@ public class Train {
 
     public void trainState(Context context, String task_id, ResponseListener listener){
 
-        String url = context.getString(R.string.api_url) + ACTION_TRAIN_SATE;
+        String baseUrl= CacheUtils.getString(context, Constans.API_URL,"");
+        if (TextUtils.isEmpty(baseUrl)){
+            baseUrl = context.getString(R.string.api_url);
+        }
+        String url = baseUrl + ACTION_TRAIN_SATE;
         Map<String, String> map = new HashMap<>();
 
         Log.d("task_id",task_id);
@@ -44,12 +51,20 @@ public class Train {
     }
 
     public void trainPerson(Context context, ResponseListener listener){
-        String url = context.getString(R.string.api_url) + ACTION_TRAIN_PERSON;
+        String baseUrl= CacheUtils.getString(context, Constans.API_URL,"");
+        if (TextUtils.isEmpty(baseUrl)){
+            baseUrl = context.getString(R.string.api_url);
+        }
+        String url = baseUrl + ACTION_TRAIN_PERSON;
         FetchData.getInstance().fetch(context, url, listener);
     }
 
     public void trainGroup(Context context, String group_id, ResponseListener listener){
-        String url = context.getString(R.string.api_url) + ACTION_TRAIN_GROUP;
+        String baseUrl= CacheUtils.getString(context, Constans.API_URL,"");
+        if (TextUtils.isEmpty(baseUrl)){
+            baseUrl = context.getString(R.string.api_url);
+        }
+        String url = baseUrl + ACTION_TRAIN_GROUP;
         Map<String, String> map = new HashMap<>();
         map.put("group_id",group_id);
         FetchData.getInstance().fetch(context, url, map, listener);

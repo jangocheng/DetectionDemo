@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.compilesense.liuyi.detectiondemo.R;
 import com.compilesense.liuyi.detectiondemo.model.Group;
+import com.compilesense.liuyi.detectiondemo.model.Person;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.ResponseListener;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.APIManager;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.RecognitionResponse;
@@ -140,6 +141,68 @@ public class GroupManageActivity extends BaseActivity {
                     }
                 });
             }
+
+            @Override
+            public void onChageInfo(int position) {
+                final Group group = adapter.groupList.get(position);
+
+                //获取一个group的信息
+                APIManager.getInstance().getGroupInfo(GroupManageActivity.this,group.group_id  ,  new ResponseListener() {
+                    @Override
+                    public void success(String response) {
+
+                        response = Util.string2jsonString(response);
+                        Gson gson = new Gson();
+                        try {
+                            GroupInfoBean groupInfo= gson.fromJson(response, GroupInfoBean.class);
+                            if (groupInfo.status.equals("OK")) {
+                                String title=groupInfo.group_name+"     "+groupInfo.tag;
+                                Util.buildEditDialog(GroupManageActivity.this,title,"名称","标签",new Util.DialogOnClickListener(){
+
+                                    @Override
+                                    public void onClick(int which) {}
+
+                                    @Override
+                                    public void onPosiButtonClick(int which, String text1, String text2) {
+                                        showDialog(GroupManageActivity.this, "");
+
+                                        APIManager.getInstance().updataGroup(GroupManageActivity.this,group.group_id  , text1, text2, new ResponseListener() {
+                                            @Override
+                                            public void success(String response) {
+                                                dismissDialog();
+                                                fetchGroup();
+                                            }
+
+                                            @Override
+                                            public void failed() {
+                                                dismissDialog();
+                                                Toast.makeText(GroupManageActivity.this,
+                                                        getResources().getString(R.string.network_fail),
+                                                        Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        }catch (Exception e){
+                            e.printStackTrace();
+                            Toast.makeText(GroupManageActivity.this,getResources().getString(R.string.network_fail),Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void failed() {
+
+                        Toast.makeText(GroupManageActivity.this,
+                                getResources().getString(R.string.network_fail),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+
+
+
+            }
         };
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv_groups);
         recyclerView.setLayoutManager(new LinearLayoutManager(GroupManageActivity.this));
@@ -186,8 +249,11 @@ public class GroupManageActivity extends BaseActivity {
                 Gson gson = new Gson();
                 try {
                     ResponseGroupFetch responseGroupFetch = gson.fromJson(response, ResponseGroupFetch.class);
-                    if (responseGroupFetch.group == null){
+                    if (responseGroupFetch.status.equals("NO")){
                         responseGroupFetch.group = Collections.EMPTY_LIST;
+                        Toast.makeText(GroupManageActivity.this,
+                                "该账号下没有人员组数据，请添加",
+                                Toast.LENGTH_SHORT).show();
                     }
 
                     adapter.setGroupList( responseGroupFetch.group );
@@ -239,6 +305,10 @@ public class GroupManageActivity extends BaseActivity {
         try{
             RecognitionResponse recognitionResponse = gson.fromJson(response,RecognitionResponse.class);
 
+            if (recognitionResponse.Persons.size()<=0){
+                Toast.makeText(this, "检测异常："+recognitionResponse.Exception,Toast.LENGTH_SHORT).show();
+                return;
+            }
 
             if (recognitionResponse.Persons.get(0).Passed){
                 Toast.makeText(this,"识别通过",Toast.LENGTH_SHORT).show();
@@ -247,6 +317,7 @@ public class GroupManageActivity extends BaseActivity {
             }
 
         }catch (Exception e){
+            Toast.makeText(this,getResources().getString(R.string.network_fail),Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
 
@@ -264,17 +335,25 @@ public class GroupManageActivity extends BaseActivity {
         public List<Group> group;
     }
 
+    public class GroupInfoBean{
+        public String status;
+        public String group_id;
+        public String group_name;
+        public String tag;
+    }
+
     interface ItemClickListener{
         void onDeleteGroup(int position);
         void onManagePerson(int position);
         void onRecognizeGroup(int position);
+        void onChageInfo(int position);
     }
 
     class GroupViewHolder extends RecyclerView.ViewHolder{
         View itemView;
         TextView itemName;
         View itemControl;
-        Button deleteGroup, managePerson, recognizeGroup;
+        Button deleteGroup, managePerson, recognizeGroup,changeInfo;
 
         public GroupViewHolder(View itemView) {
             super(itemView);
@@ -284,7 +363,7 @@ public class GroupManageActivity extends BaseActivity {
             deleteGroup = (Button) itemView.findViewById(R.id.item_delete_group);
             managePerson = (Button) itemView.findViewById(R.id.item_manage_person);
             recognizeGroup = (Button) itemView.findViewById(R.id.item_recognize_group);
-
+            changeInfo = (Button) itemView.findViewById(R.id.item_chage_group_info);
             itemControl.setVisibility(View.GONE);
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -340,11 +419,21 @@ public class GroupManageActivity extends BaseActivity {
                     listener.onRecognizeGroup(holder.getAdapterPosition());
                 }
             });
+            holder.changeInfo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.onChageInfo(holder.getAdapterPosition());
+                }
+            });
         }
 
         @Override
         public int getItemCount() {
-            return groupList.size();
+            if(groupList!=null){
+                return groupList.size();
+            }
+            return 0;
+
         }
     }
 

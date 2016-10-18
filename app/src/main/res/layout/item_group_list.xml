@@ -43,6 +43,10 @@
             android:id="@+id/item_manage_person"
             android:text="@string/person_manage"
             style="@style/MyButton.b2" />
+        <Button
+            android:id="@+id/item_chage_group_info"
+            android:text="@string/chage_person_info"
+            style="@style/MyButton.b2" />
     </LinearLayout>
 
 </LinearLayout>

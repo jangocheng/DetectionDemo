@@ -20,6 +20,9 @@ public class FaceRectangleView extends ImageView {
 
     private Rect sourceRect;
     private Rect sourceFaceRect;
+    private boolean isClear=false;
+    private boolean isDrawRect=false;
+    private boolean isDrawPoint=false;
     private List<KeyPointBean.FacesBean.PointsBean> sourceFacePoints;
     private Rect faceRect = new Rect();
     Paint rectPaint;
@@ -37,11 +40,21 @@ public class FaceRectangleView extends ImageView {
     public void setRect(Rect sourceRect, Rect rect) {
         this.sourceFaceRect = rect;
         this.sourceRect = sourceRect;
+        this.isClear = false;
+        this.isDrawRect=true;
         invalidate();
     }
 
-    public void setPoints(List<KeyPointBean.FacesBean.PointsBean> sourceFacePoints) {
+    public void cleartRectAndPoints() {
+        this.isClear = true;
+        invalidate();
+    }
+
+    public void setPoints(List<KeyPointBean.FacesBean.PointsBean> sourceFacePoints,Rect sourceRect) {
+        this.sourceRect = sourceRect;
         this.sourceFacePoints = sourceFacePoints;
+        this.isClear = false;
+        this.isDrawPoint=true;
         invalidate();
     }
 
@@ -55,15 +68,16 @@ public class FaceRectangleView extends ImageView {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        //当用户执行cleartRectAndPoints方法，则直接return
+        if (isClear){return;}
+
         int w = getWidth();
         int h = getHeight();
         int l = getLeft();
         int t = getTop();
 
-        if (sourceFaceRect != null){
-
-
-
+        //人脸检测执行代码
+        if (isDrawRect && sourceFaceRect != null ){
             int dRLeft = (sourceFaceRect.left * w / sourceRect.width()) ;
             int dRWidth = (sourceFaceRect.width() * w / sourceRect.width()) ;
             int dRTop = (sourceFaceRect.top * h / sourceRect.height()) ;
@@ -73,15 +87,16 @@ public class FaceRectangleView extends ImageView {
             faceRect.right = dRLeft + dRWidth;
             faceRect.bottom = dRTop + dRHeight;
             canvas.drawRect(faceRect,rectPaint);
+            isDrawRect=false;
         }
-
-        if (sourceFacePoints!=null && sourceFacePoints.size() >0){
+        //关键点检测执行代码
+        if (isDrawPoint && sourceFacePoints!=null && sourceFacePoints.size() >0){
             for (KeyPointBean.FacesBean.PointsBean point : sourceFacePoints) {
                 int pX = (w * Integer.parseInt(point.getX()) / sourceRect.width()) ;
                 int pY = (h * Integer.parseInt(point.getY()) / sourceRect.height()) ;
                 canvas.drawPoint(pX+0.5f,pY+0.5f,rectPaint);
             }
-
+            isDrawPoint=false;
         }
     }
 

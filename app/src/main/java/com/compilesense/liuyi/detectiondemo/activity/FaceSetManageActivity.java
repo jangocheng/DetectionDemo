@@ -93,36 +93,59 @@ public class FaceSetManageActivity extends BaseActivity {
             public void onChageSetName(final int position) {
                 final FaceSet faceSet = adapter.faceSetList.get(position);
 
-                Util.buildEditDialog(FaceSetManageActivity.this,"修改名称","名称","标签",new Util.DialogOnClickListener(){
+                //获取一个Person的信息
+                APIManager.getInstance().getFaceSet(FaceSetManageActivity.this,faceSet.faceset_id  ,  new ResponseListener() {
+                    @Override
+                    public void success(String response) {
+
+                        response = Util.string2jsonString(response);
+                        Gson gson = new Gson();
+                        try {
+                            FaceSetInfoBean faceSetInfo= gson.fromJson(response, FaceSetInfoBean.class);
+                            if (faceSetInfo.status.equals("OK")) {
+                                String title=faceSetInfo.faceset_name+"     "+faceSetInfo.tag;
+                                Util.buildEditDialog(FaceSetManageActivity.this,title,"名称","标签",new Util.DialogOnClickListener(){
+
+                                    @Override
+                                    public void onClick(int which) {}
+
+                                    @Override
+                                    public void onPosiButtonClick(int which, String text1, String text2) {
+                                        showDialog(FaceSetManageActivity.this, "");
+
+                                        APIManager.getInstance().updateFaceSet(FaceSetManageActivity.this,faceSet.faceset_id  , text1, text2, new ResponseListener() {
+                                            @Override
+                                            public void success(String response) {
+                                                dismissDialog();
+                                                Log.d(TAG,"updateFaceSet:"+response);
+                                                fetchFaceSet();
+                                            }
+
+                                            @Override
+                                            public void failed() {
+                                                dismissDialog();
+                                                Toast.makeText(FaceSetManageActivity.this,
+                                                        getResources().getString(R.string.network_fail),
+                                                        Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        }catch (Exception e){
+                            e.printStackTrace();
+                            Toast.makeText(FaceSetManageActivity.this,getResources().getString(R.string.network_fail),Toast.LENGTH_SHORT).show();
+                        }
+                    }
 
                     @Override
-                    public void onClick(int which) {}
+                    public void failed() {
 
-                    @Override
-                    public void onPosiButtonClick(int which, String text1, String text2) {
-                        showDialog(FaceSetManageActivity.this, "");
-
-                        APIManager.getInstance().updateFaceSet(FaceSetManageActivity.this,faceSet.faceset_id  , text1, text2, new ResponseListener() {
-                            @Override
-                            public void success(String response) {
-                                dismissDialog();
-                                Log.d(TAG,"updateFaceSet:"+response);
-                                fetchFaceSet();
-                            }
-
-                            @Override
-                            public void failed() {
-                                dismissDialog();
-                                Toast.makeText(FaceSetManageActivity.this,
-                                        getResources().getString(R.string.network_fail),
-                                        Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                        Toast.makeText(FaceSetManageActivity.this,
+                                getResources().getString(R.string.network_fail),
+                                Toast.LENGTH_SHORT).show();
                     }
                 });
-
-
-
 
             }
         };
@@ -175,7 +198,7 @@ public class FaceSetManageActivity extends BaseActivity {
                     if (responseGroupFetch.faceset == null){
                         responseGroupFetch.faceset = Collections.EMPTY_LIST;
                         Toast.makeText(FaceSetManageActivity.this,
-                                "该账号下没有人脸集，请添加",
+                                "该账号下没有人脸集数据，请添加",
                                 Toast.LENGTH_SHORT).show();
                     }
 
@@ -247,11 +270,19 @@ public class FaceSetManageActivity extends BaseActivity {
         public List<FaceSet> faceset;
     }
 
+    public class FaceSetInfoBean{
+        public String status;
+        public String faceset_id;
+        public String faceset_name;
+        public String tag;
+    }
+
     interface ItemClickListener{
         void onDeleteFaceSet(int position);
         void onManageFaceSet(int position);
         void onChageSetName(int position);
     }
+
 
     class FaceSetViewHolder extends RecyclerView.ViewHolder{
         View itemView;
@@ -327,7 +358,11 @@ public class FaceSetManageActivity extends BaseActivity {
 
         @Override
         public int getItemCount() {
-            return faceSetList.size();
+            if(faceSetList!=null){
+                return faceSetList.size();
+            }
+            return 0;
+
         }
     }
 

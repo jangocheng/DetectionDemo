@@ -66,6 +66,8 @@ public class MainActivity extends BaseActivity {
         initView();
     }
 
+
+
     private void initToolbar() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.main_toolbar);
         toolbar.inflateMenu(R.menu.base_toolbar_menu);//设置右上角的填充菜单
@@ -84,21 +86,23 @@ public class MainActivity extends BaseActivity {
                         @Override
                         public void onPosiButtonClick(int which, String text1, String text2) {
                             // 将账号和密码设置到SP中
-                            //CacheUtils.setString(MainActivity.this,Constans.API_ID,text1);
-                            //  CacheUtils.setString(MainActivity.this,Constans.API_SECRET,text2);
+                                CacheUtils.setString(MainActivity.this,Constans.API_ID,text1);
+                                CacheUtils.setString(MainActivity.this,Constans.API_SECRET,text2);
+                                Toast.makeText(MainActivity.this,"修改成功",Toast.LENGTH_SHORT).show();
                         }
                     });
                 } else if (menuItemId == R.id.action_item2) {
-                    Util.buildEditDialog(MainActivity.this,"更改IP","IP","端口号",new DialogOnClickListener(){
+                    Util.buildEditDialog(MainActivity.this,"更改IP","IP地址","端口号",new DialogOnClickListener(){
 
                         @Override
                         public void onClick(int which) {}
 
                         @Override
                         public void onPosiButtonClick(int which, String text1, String text2) {
-                            // 将账号和密码设置到SP中
-                            CacheUtils.setString(MainActivity.this, Constans.API_URL,text1);
-                             CacheUtils.setString(MainActivity.this,Constans.API_PORT,text2);
+                            // 将账号和密码设置到SP中 http://182.139.169.23:8888
+                                String url="http://"+text1+":"+text2;
+                                CacheUtils.setString(MainActivity.this, Constans.API_URL,url);
+                                Toast.makeText(MainActivity.this,"修改成功",Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
@@ -123,6 +127,8 @@ public class MainActivity extends BaseActivity {
         final GetImageListener listener = new GetImageListener() {
             @Override
             public void getImage(Uri imageUri, Bitmap bitmap) {
+                //清除之前关键点和人脸检测留下的矩形和点痕迹
+                image.cleartRectAndPoints();
                 if (imageUri != null){
 
                     Bitmap b = null;
@@ -243,7 +249,6 @@ public class MainActivity extends BaseActivity {
                 DetectImgProperties.getInstance().detect(MainActivity.this, bitmap, new ResponseListener() {
                     @Override
                     public void success(String response) {
-                        info.setText(response);
                         Gson gson = new Gson();
                         try{
                             FaceBean facebean = gson.fromJson(response,FaceBean.class);
@@ -265,7 +270,6 @@ public class MainActivity extends BaseActivity {
                 DetectKeyPoint.getInstance().detect(MainActivity.this, bitmap, new ResponseListener() {
                     @Override
                     public void success(String response) {
-                        info.setText(response);
                         Gson gson = new Gson();
                         try{
                             KeyPointBean keyPointBean = gson.fromJson(response,KeyPointBean.class);
@@ -326,8 +330,8 @@ public class MainActivity extends BaseActivity {
                 DetectImgProperties.getInstance().detect(MainActivity.this, imageUri, new ResponseListener() {
                     @Override
                     public void success(String response) {
-                        info.setText(response);
                         response = Util.string2jsonString(response);
+                        System.out.print("======================人脸检测返回值=======================>"+response);
                         Gson gson = new Gson();
                         try{
                             FaceBean facebean = gson.fromJson(response,FaceBean.class);
@@ -350,9 +354,8 @@ public class MainActivity extends BaseActivity {
                 DetectKeyPoint.getInstance().detect(MainActivity.this, imageUri, new ResponseListener() {
                     @Override
                     public void success(String response) {
-                        info.setText(response);
-
                         response = Util.string2jsonString(response);
+                        System.out.print("======================关键点检测返回值=======================>"+response);
                         Gson gson = new Gson();
                         try{
                             KeyPointBean keyPointBean = gson.fromJson(response,KeyPointBean.class);
@@ -380,7 +383,7 @@ public class MainActivity extends BaseActivity {
 
     //关键点检测
     private void detectionFace(KeyPointBean keypointBean) {
-        //info.setText("检测成功");
+        info.setText("检测完毕");
         if ( !keypointBean.getStatus().equals("OK")){
             info.setText("图片中未检测到人脸");
             return;
@@ -390,19 +393,13 @@ public class MainActivity extends BaseActivity {
             return;
         }
         for (KeyPointBean.FacesBean face : faces) {
-            int left = Integer.parseInt(face.getX());
-            int top = Integer.parseInt(face.getY());
-            int right = left + Integer.parseInt(face.getWidth());
-            int bottom = top + Integer.parseInt(face.getHeight());
-            Rect rect = new Rect(left,top,right,bottom);
-            image.setRect(imageSourceRect, rect);
-            image.setPoints(face.getPoints());
+            image.setPoints(face.getPoints(),imageSourceRect);
         }
 
     }
     //人脸检测
     private void detectionFace(FaceBean facebean) {
-       // info.setText("检测成功");
+        info.setText("检测完毕");
         FaceBean.AttributeBean rectangle = facebean.getAttribute();
         if(TextUtils.isEmpty(rectangle.getX()) || TextUtils.isEmpty(rectangle.getY())
                 || TextUtils.isEmpty(rectangle.getWidth()) || TextUtils.isEmpty(rectangle.getHeight())

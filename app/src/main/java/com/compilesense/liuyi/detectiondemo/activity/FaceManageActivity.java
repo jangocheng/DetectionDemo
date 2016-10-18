@@ -186,13 +186,16 @@ public class FaceManageActivity extends BaseActivity {
                     response = Util.string2jsonString(response);
                     Log.d(TAG,"res:"+response);
                     ResponseFaceFetch r = gson.fromJson(response, ResponseFaceFetch.class);
-                    if (r.face == null){
+                    if (r.status.equals("NO")){
                         r.face = Collections.EMPTY_LIST;
-                    }
+                        Toast.makeText(FaceManageActivity.this,
+                                "暂无没有人脸数据，请添加",
+                                Toast.LENGTH_SHORT).show();
 
+                    }
                     adapter.setFaceList(r.face);
                 }catch (Exception e){
-                    Log.e(TAG,e.toString());
+                    e.printStackTrace();
                 }
             }
 
@@ -289,6 +292,11 @@ public class FaceManageActivity extends BaseActivity {
                                                         try {
                                                             RecognitionResponse recognitionResponse = gson1.fromJson(response,RecognitionResponse.class);
 
+                                                            if (recognitionResponse.Persons.size()<=0){
+                                                                Toast.makeText(FaceManageActivity.this, "检测异常："+recognitionResponse.Exception,Toast.LENGTH_SHORT).show();
+                                                                return;
+                                                            }
+
                                                             if (recognitionResponse.Persons.get(0).Passed){
                                                                 Toast.makeText(FaceManageActivity.this,"识别通过",Toast.LENGTH_SHORT).show();
                                                             }else {
@@ -358,6 +366,11 @@ public class FaceManageActivity extends BaseActivity {
                                                     Gson gson1 = new Gson();
                                                     try {
                                                         RecognitionResponse recognitionResponse = gson1.fromJson(response,RecognitionResponse.class);
+
+                                                        if (recognitionResponse.Persons.size()<=0){
+                                                            Toast.makeText(FaceManageActivity.this, "检测异常："+recognitionResponse.Exception,Toast.LENGTH_SHORT).show();
+                                                            return;
+                                                        }
 
                                                         if (recognitionResponse.Persons.get(0).Passed){
                                                             Toast.makeText(FaceManageActivity.this,"识别通过",Toast.LENGTH_SHORT).show();
@@ -496,7 +509,10 @@ public class FaceManageActivity extends BaseActivity {
 
         @Override
         public int getItemCount() {
-            return faceList.size();
+            if(faceList!=null){
+                return faceList.size();
+            }
+            return 0;
         }
     }
 
