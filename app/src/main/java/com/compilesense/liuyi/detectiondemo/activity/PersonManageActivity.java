@@ -20,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.compilesense.liuyi.detectiondemo.R;
+import com.compilesense.liuyi.detectiondemo.model.FaceSet;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.apis.APIManager;
 import com.compilesense.liuyi.detectiondemo.platform_interaction.RecognitionResponse;
 import com.compilesense.liuyi.detectiondemo.utils.SpaceItemDecoration;
@@ -29,6 +30,7 @@ import com.compilesense.liuyi.detectiondemo.platform_interaction.ResponseListene
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -185,6 +187,65 @@ public class PersonManageActivity extends BaseActivity {
                     }
                 });
             }
+
+            @Override
+            public void onChageInfo(int position) {
+                final Person person = adapter.personList.get(position);
+
+                //获取一个Person的信息
+                APIManager.getInstance().getPersonInfo(PersonManageActivity.this,person.person_id  ,  new ResponseListener() {
+                    @Override
+                    public void success(String response) {
+
+                        response = Util.string2jsonString(response);
+                        Gson gson = new Gson();
+                        try {
+                            PersonInfoBean personInfo= gson.fromJson(response, PersonInfoBean.class);
+                            if (personInfo.status.equals("OK")) {
+                                String title=personInfo.person_name+"     "+personInfo.tag;
+                                Util.buildEditDialog(PersonManageActivity.this,title,"名字","标签",new Util.DialogOnClickListener(){
+
+                                    @Override
+                                    public void onClick(int which) {}
+
+                                    @Override
+                                    public void onPosiButtonClick(int which, String text1, String text2) {
+                                        showDialog(PersonManageActivity.this, "");
+                                        APIManager.getInstance().upDataPerson(PersonManageActivity.this,person.person_id  , text1, text2, new ResponseListener() {
+                                            @Override
+                                            public void success(String response) {
+                                                dismissDialog();
+                                                Log.d(TAG,"修改人员名称返回值====:"+response);
+                                                fetchPerson();
+                                            }
+
+                                            @Override
+                                            public void failed() {
+                                                dismissDialog();
+                                                Toast.makeText(PersonManageActivity.this,
+                                                        getResources().getString(R.string.network_fail),
+                                                        Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        }catch (Exception e){
+                            e.printStackTrace();
+                            Toast.makeText(PersonManageActivity.this,getResources().getString(R.string.network_fail),Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void failed() {
+
+                        Toast.makeText(PersonManageActivity.this,
+                                getResources().getString(R.string.network_fail),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+            }
         });
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv_persons);
         recyclerView.setLayoutManager(new LinearLayoutManager(PersonManageActivity.this,LinearLayoutManager.VERTICAL,false));
@@ -194,11 +255,14 @@ public class PersonManageActivity extends BaseActivity {
 
     private void handRecognitionResponse(String response){
         response = Util.string2jsonString(response);
-
-        Log.d(TAG,"11111111111:"+response);
         Gson gson = new Gson();
         try{
             RecognitionResponse recognitionResponse = gson.fromJson(response,RecognitionResponse.class);
+
+            if (recognitionResponse.Persons.size()<=0){
+                Toast.makeText(this, "检测异常："+recognitionResponse.Exception,Toast.LENGTH_SHORT).show();
+                return;
+            }
 
             if (recognitionResponse.Persons.get(0).Passed){
                 Toast.makeText(this,"识别通过",Toast.LENGTH_SHORT).show();
@@ -208,6 +272,7 @@ public class PersonManageActivity extends BaseActivity {
 
         }catch (Exception e){
             e.printStackTrace();
+            Toast.makeText(this,getResources().getString(R.string.network_fail),Toast.LENGTH_SHORT).show();
         }
 
     }
@@ -247,12 +312,18 @@ public class PersonManageActivity extends BaseActivity {
                     response = Util.string2jsonString(response);
                     Log.e(TAG,"人员数据:"+response);
                     ResponseFetchPerson responseFetchPerson = gson.fromJson(response,ResponseFetchPerson.class);
-                    if (responseFetchPerson.person == null){
+                    if (responseFetchPerson.status.equals("NO")){
+                        responseFetchPerson.person = Collections.EMPTY_LIST;
+                        Toast.makeText(PersonManageActivity.this,
+                                "该账号下没有人员数据，请添加",
+                                Toast.LENGTH_SHORT).show();
                         return;
                     }
                     adapter.setPersons(responseFetchPerson.person);
                 }catch (Exception e ){
-                    Log.e(TAG,e.toString());
+
+                    e.printStackTrace();
+
                 }
             }
 
@@ -275,10 +346,18 @@ public class PersonManageActivity extends BaseActivity {
         public List<Person> person;
     }
 
+    public class PersonInfoBean{
+        public String status;
+        public String person_id;
+        public String person_name;
+        public String tag;
+    }
+
     interface OnItemClickListener{
         void onDeletePerson(int position);
         void onManageFace(int position);
         void onRecognizePerson(int position);
+        void onChageInfo(int position);
     }
 
     class PersonListAdapter extends RecyclerView.Adapter<PersonListViewHolder>{
@@ -333,6 +412,13 @@ public class PersonManageActivity extends BaseActivity {
                         itemClickListener.onRecognizePerson(p);
                     }
                 });
+
+                holder.changeInfo.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        itemClickListener.onChageInfo(p);
+                    }
+                });
             }
             String name = personList.get(position).person_name;
             holder.name.setText(name);
@@ -341,7 +427,10 @@ public class PersonManageActivity extends BaseActivity {
 
         @Override
         public int getItemCount() {
-            return personList.size();
+            if(personList!=null){
+                return personList.size();
+            }
+            return 0;
         }
     }
 
@@ -349,7 +438,7 @@ public class PersonManageActivity extends BaseActivity {
         View view;
         TextView name;
         View control;
-        Button deletePerson,manageFace,recognizePerson;
+        Button deletePerson,manageFace,recognizePerson,changeInfo;
 
         public PersonListViewHolder(View itemView) {
             super(itemView);
@@ -359,6 +448,7 @@ public class PersonManageActivity extends BaseActivity {
             manageFace = (Button) control.findViewById(R.id.item_manege_face);
             deletePerson = (Button) control.findViewById(R.id.item_delete_person);
             recognizePerson = (Button) control.findViewById(R.id.item_recognize_person);
+            changeInfo = (Button) control.findViewById(R.id.item_chage_person_info);
             control.setVisibility(View.GONE);
 
             view.setOnClickListener(new View.OnClickListener() {

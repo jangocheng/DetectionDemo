@@ -2,7 +2,7 @@
 
     <!--api-->
     <string name="api_url2">%1$s</string>
-    <string name="api_url">http://182.139.169.23:8888</string>
+    <string name="api_url">http://182.148.68.241:8888</string>
     <string name="app_name">DetectionDemo</string>
     <string name="api_id">7B871498-78EA-435E-887C-D2CA750B6E34</string>
     <string name="api_secret">432EFBE19D3C6BDA857C2134E7EA6F09</string>
@@ -57,7 +57,7 @@
     <string name="title_activity_faceset_manage">FaceSetManageActivity</string>
 
     <!--Toast-->
-    <string name="network_fail">网络访问出错</string>
+    <string name="network_fail">网络访问异常</string>
     <string name="recognize_face_ing">正在识别...</string>
 
     <string name="item_01">更改账号</string>
@@ -65,5 +65,6 @@
     <string name="chage_setname">修改集合名称</string>
     <string name="groupname">组名</string>
     <string name="setname">名称</string>
+    <string name="chage_person_info">修改信息</string>
 
 </resources>

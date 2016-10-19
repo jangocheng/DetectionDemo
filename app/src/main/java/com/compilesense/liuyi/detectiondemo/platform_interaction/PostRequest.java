@@ -3,6 +3,7 @@ package com.compilesense.liuyi.detectiondemo.platform_interaction;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.android.volley.NetworkResponse;
@@ -12,6 +13,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.Volley;
 import com.compilesense.liuyi.detectiondemo.R;
+import com.compilesense.liuyi.detectiondemo.utils.CacheUtils;
+import com.compilesense.liuyi.detectiondemo.utils.Constans;
 import com.compilesense.liuyi.detectiondemo.utils.Util;
 
 import java.io.UnsupportedEncodingException;
@@ -66,8 +69,17 @@ public class PostRequest {
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
-                params.put("api_id", context.getString(R.string.api_id));
-                params.put("api_secret", context.getString(R.string.api_secret));
+
+                String api_id= CacheUtils.getString(context, Constans.API_ID,"");
+                String api_secret= CacheUtils.getString(context, Constans.API_SECRET,"");
+
+                if (TextUtils.isEmpty(api_id) && TextUtils.isEmpty(api_secret)){
+                    api_id = context.getString(R.string.api_id);
+                    api_secret = context.getString(R.string.api_secret);
+                }
+
+                params.put("api_id", api_id);
+                params.put("api_secret",api_secret);
                 if (extraParams != null && !extraParams.isEmpty()){
                     params.putAll(extraParams);
                 }

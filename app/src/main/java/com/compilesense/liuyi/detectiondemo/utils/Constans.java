@@ -18,10 +18,7 @@ public interface Constans
 	 * url
 	 */
 	String	API_URL	= "api_url";
-	/**
-	 * 端口号
-	 */
-	String	API_PORT	= "api_port";
+
 
 
 }

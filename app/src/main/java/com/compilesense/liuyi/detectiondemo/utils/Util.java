@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -14,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.compilesense.liuyi.detectiondemo.R;
+import com.compilesense.liuyi.detectiondemo.activity.PersonManageActivity;
 import com.compilesense.liuyi.detectiondemo.model.Group;
 import com.compilesense.liuyi.detectiondemo.model.Person;
 
@@ -111,8 +113,19 @@ public class Util {
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        listener.onPosiButtonClick(which,text1.getText().toString(),text2.getText().toString());
+                        String info1=text1.getText().toString();
+                        String info2=text2.getText().toString();
+                        if (TextUtils.isEmpty(info1) || TextUtils.isEmpty(info2)){
+                            Toast.makeText(context, "更改失败，不能有空数据", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        listener.onPosiButtonClick(which,info1,info2);
                     }
+                });
+        customizeDialog.setNegativeButton("取消",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {}
                 });
         customizeDialog.show();
 
